@@ -309,8 +309,36 @@ export async function updateLightningGoals(
 
     console.log('[LightningGoals] Yesterday had', existingTransactions.length, 'transactions')
 
-    // Add yesterday to history with all its transactions
-    // No need to create a separate goal_met transaction - the payout transaction was already created
+    // CRITICAL: Check if yesterday's goal was missed and apply penalty
+    let penaltyAmount = 0
+    const yesterdayTransactions = [...existingTransactions]
+
+    if (!current.todayGoalMet && current.status === 'active') {
+      // Goal was missed - deduct penalty from balance
+      penaltyAmount = current.dailyReward
+      console.log('[LightningGoals] ⚠️ Goal missed on', current.todayDate)
+      console.log('[LightningGoals] 💸 Applying penalty:', penaltyAmount, 'sats')
+
+      // Create penalty transaction
+      const penaltyTransaction: TransactionHistory = {
+        id: `penalty-${current.todayDate}-${Date.now()}`,
+        type: 'goal_missed',
+        amount: penaltyAmount,
+        timestamp: Date.now(),
+        description: `Missed daily goal: ${penaltyAmount} sats penalty`,
+        txHash: undefined
+      }
+
+      yesterdayTransactions.push(penaltyTransaction)
+
+      // Deduct penalty from balance
+      updated.currentBalance = Math.max(0, (current.currentBalance || 0) - penaltyAmount)
+      updated.totalWithdrawn = (current.totalWithdrawn || 0) + penaltyAmount
+
+      console.log('[LightningGoals] New balance after penalty:', updated.currentBalance)
+    }
+
+    // Add yesterday to history with all its transactions (including penalty if applicable)
     updated.history = [
       {
         date: current.todayDate,
@@ -318,7 +346,7 @@ export async function updateLightningGoals(
         goalMet: current.todayGoalMet,
         rewardSent: current.todayRewardSent,
         amount: current.todayRewardAmount,
-        transactions: existingTransactions // Just use existing transactions
+        transactions: yesterdayTransactions
       },
       ...current.history.filter(h => h.date !== current.todayDate).slice(0, 6) // Keep only last 7 days
     ]
@@ -330,7 +358,7 @@ export async function updateLightningGoals(
     updated.todayRewardSent = false
     updated.todayRewardAmount = 0
 
-    // Update streak
+    // Update streak and missed days counter
     if (current.todayGoalMet) {
       updated.currentStreak = (current.currentStreak || 0) + 1
     } else {
