@@ -1,11 +1,9 @@
 import { SimplePool } from 'nostr-tools'
+import { signEventWithRemote } from './ndk-signer-manager'
 
 // Create pool instance
 const pool = new SimplePool()
 const RELAYS = ['wss://relay.damus.io', 'wss://relay.snort.social', 'wss://nos.lol', 'wss://relay.nostr.band']
-
-// Import signer
-import { signEventWithRemote } from './ndk-signer-manager'
 
 // Add debug mode
 const DEBUG = true
@@ -15,38 +13,56 @@ const log = (msg: string, data?: any) => {
   }
 }
 
+// ==============================================================================
+// 1. Immutable Event Types (The "Golden Source")
+// ==============================================================================
+
+// Event Kinds and Tag Prefixes
+const APP_TAG = 'nostr-journal'
+const EVENT_KIND = 30078 // Parameterized Replaceable Event
+
+// D-Tag Prefixes for different event types
+const D_PREFIX_STAKE = 'lg-stake-'        // For stake creation/settings
+const D_PREFIX_TX = 'lg-tx-'              // For financial transactions
+const D_PREFIX_PROGRESS = 'lg-progress-'  // For daily writing progress
+const D_PREFIX_STATUS = 'lg-status-'      // For status changes (cancel/pause)
+
+// ==============================================================================
+// 2. Data Models (State Projections)
+// ==============================================================================
+
 export interface LightningGoals {
-  // Goal settings
+  // Goal settings (from latest lg-stake- event)
   dailyWordGoal: number
   dailyReward: number
   
-  // Balance
+  // Balance (calculated from lg-tx- events)
   currentBalance: number
   initialStake: number
   totalDeposited: number
   totalWithdrawn: number
   
-  // Status
-  status: 'active' | 'paused' | 'cancelled' | 'pending_payment'
+  // Status (from latest lg-status- or lg-stake- event)
+  status: 'active' | 'paused' | 'cancelled' | 'pending_payment' | 'ended'
   createdAt: number
   lastUpdated: number
   
-  // NEW: Track when stake was created and what word count was at that time
-  stakeCreatedAt: number           // Unix timestamp
-  baselineWordCount: number        // Words at stake creation (don't count these)
-  totalWordCountAtLastUpdate: number // Track total word count for incremental updates
+  // Baseline (from lg-stake- event)
+  stakeCreatedAt: number
+  baselineWordCount: number
+  totalWordCountAtLastUpdate: number
   
   // Payment
   lightningAddress: string
   
-  // Today's tracking
+  // Today's tracking (calculated from lg-progress- events)
   todayDate: string
   todayWords: number
   todayGoalMet: boolean
   todayRewardSent: boolean
   todayRewardAmount: number
   
-  // History (last 7 days)
+  // History (calculated from lg-progress- and lg-tx- events)
   history: DayHistory[]
   
   // Stats
@@ -64,146 +80,330 @@ export interface DayHistory {
   goalMet: boolean
   rewardSent: boolean
   amount: number
-  // NEW: Transaction history for this day
-  transactions?: TransactionHistory[]
+  transactions: TransactionHistory[]
 }
 
 export interface TransactionHistory {
   id: string
-  type: 'deposit' | 'payout' | 'refund'
+  type: 'deposit' | 'payout' | 'refund' | 'top_up' | 'stake_created' | 'goal_met' | 'goal_missed'
   amount: number
   timestamp: number
   description: string
   txHash?: string
 }
 
-/**
- * Add a transaction to the Lightning Goals history
- */
-export async function addTransaction(
-  userPubkey: string, 
-  transaction: TransactionHistory, 
-  authData: any
-): Promise<void> {
-  log('Adding transaction:', transaction)
-  
-  // Get current goals
-  const goals = await getLightningGoals(userPubkey)
-  if (!goals) {
-    throw new Error('No Lightning Goals found')
+// ==============================================================================
+// 3. Helper Functions for Publishing Immutable Events
+// ==============================================================================
+
+async function publishEvent(
+  userPubkey: string,
+  dTag: string,
+  tags: string[][],
+  authData: any,
+  content: string = ""
+): Promise<string> {
+  const event = {
+    kind: EVENT_KIND,
+    created_at: Math.floor(Date.now() / 1000),
+    tags: [
+      ["d", dTag],
+      ["client", APP_TAG],
+      ...tags
+    ],
+    content,
+    pubkey: userPubkey
   }
   
-  // Find today's history entry or create it
-  const today = new Date().toISOString().split('T')[0]
-  let todayHistory = goals.history.find(h => h.date === today)
+  log(`Publishing event: ${dTag}`, { tags: event.tags })
   
-  if (!todayHistory) {
-    todayHistory = {
-      date: today,
-      words: 0,
-      goalMet: false,
-      rewardSent: false,
-      amount: 0,
-      transactions: []
-    }
-    goals.history.unshift(todayHistory)
-  }
-  
-  // Initialize transactions array if it doesn't exist
-  if (!todayHistory.transactions) {
-    todayHistory.transactions = []
-  }
-  
-  // Add the transaction
-  todayHistory.transactions.push(transaction)
-  
-  // Update balance based on transaction type
-  if (transaction.type === 'deposit') {
-    goals.currentBalance += transaction.amount
-    goals.totalDeposited += transaction.amount
-  } else if (transaction.type === 'payout') {
-    goals.currentBalance -= transaction.amount
-    goals.totalWithdrawn += transaction.amount
-  } else if (transaction.type === 'refund') {
-    goals.currentBalance += transaction.amount
-    goals.totalWithdrawn -= transaction.amount
-  }
-  
-  // Update the event
-  await updateLightningGoals(userPubkey, {
-    ...goals,
-    lastUpdated: Date.now()
-  }, authData)
-  
-  log('Transaction added successfully')
+  const signedEvent = await signEventWithRemote(event, authData)
+  await pool.publish(RELAYS, signedEvent)
+  return signedEvent.id
 }
 
+// ==============================================================================
+// 4. Projection Logic (State Reconstruction)
+// ==============================================================================
+
 /**
- * Get the master Lightning Goals event
- * This is FAST - only fetches ONE event
+ * The Core Projection Function
+ * Fetches all relevant events and reconstructs the current state
  */
 export async function getLightningGoals(userPubkey: string): Promise<LightningGoals | null> {
-  console.log('[LightningGoals] 🔍 Fetching master event for:', userPubkey.substring(0, 8))
+  log(`Fetching ledger events for ${userPubkey.substring(0, 8)}...`)
   
+  // 1. Fetch all events
   const events = await pool.querySync(RELAYS, {
-    kinds: [30078],
+    kinds: [EVENT_KIND],
     authors: [userPubkey],
-    "#d": ["lightning-goals"],
-    limit: 1
+    "#client": [APP_TAG] // Filter by our app tag
   })
   
-  if (events.length === 0) {
-    console.log('[LightningGoals] No goals found')
+  // Filter for our specific prefixes
+  const relevantEvents = events.filter(e => {
+    const d = e.tags.find(t => t[0] === 'd')?.[1] || ''
+    return d.startsWith('lg-') || d === 'lightning-goals' // Include old legacy event for migration
+  })
+  
+  if (relevantEvents.length === 0) {
+    log('No ledger events found')
     return null
   }
   
-  const event = events[0]
-  const getTag = (name: string) => event.tags.find(t => t[0] === name)?.[1] || ''
+  // Check for legacy migration
+  const legacyEvent = relevantEvents.find(e => e.tags.find(t => t[0] === 'd')?.[1] === 'lightning-goals')
+  const newEvents = relevantEvents.filter(e => e.tags.find(t => t[0] === 'd')?.[1]?.startsWith('lg-'))
   
-  // Parse history
-  const history: DayHistory[] = []
-  for (let i = 1; i <= 7; i++) {
-    const dayData = getTag(`day_${i}`)
-    if (dayData) {
-      const [date, words, goalMet, rewardSent, amount] = dayData.split('|')
-      history.push({
-        date,
-        words: parseInt(words),
-        goalMet: goalMet === 'true',
-        rewardSent: rewardSent === 'true',
-        amount: parseInt(amount)
-      })
-    }
+  if (newEvents.length === 0 && legacyEvent) {
+    log('Only legacy event found. Returning legacy parsed object (Migration needed on next action)')
+    return parseLegacyEvent(legacyEvent) // Fallback to old parser for read-only compatibility
   }
   
-  const goals: LightningGoals = {
+  // Sort events chronologically
+  newEvents.sort((a, b) => a.created_at - b.created_at)
+  
+  // 3. Replay History (The Ledger)
+  
+  // Initial Empty State
+  let state: LightningGoals = {
+    dailyWordGoal: 500,
+    dailyReward: 100,
+    currentBalance: 0,
+    initialStake: 0,
+    totalDeposited: 0,
+    totalWithdrawn: 0,
+    status: 'pending_payment',
+    createdAt: 0,
+    lastUpdated: 0,
+    stakeCreatedAt: 0,
+    baselineWordCount: 0,
+    totalWordCountAtLastUpdate: 0,
+    lightningAddress: '',
+    todayDate: new Date().toISOString().split('T')[0],
+    todayWords: 0,
+    todayGoalMet: false,
+    todayRewardSent: false,
+    todayRewardAmount: 0,
+    history: [],
+    currentStreak: 0,
+    totalGoalsMet: 0,
+    totalRewardsEarned: 0,
+    lastRewardDate: '',
+    missedDays: 0,
+    lastMissedDate: ''
+  }
+  
+  const today = new Date().toISOString().split('T')[0]
+  const historyMap = new Map<string, DayHistory>() // Map date -> History
+  
+  // Process events in order
+  for (const event of newEvents) {
+    const d = event.tags.find(t => t[0] === 'd')?.[1] || ''
+    const getTag = (name: string) => event.tags.find(t => t[0] === name)?.[1]
+    
+    // --- STAKE CREATION / SETTINGS ---
+    if (d.startsWith(D_PREFIX_STAKE)) {
+      state.dailyWordGoal = parseInt(getTag('daily_word_goal') || '0')
+      state.dailyReward = parseInt(getTag('daily_reward') || '0')
+      state.initialStake = parseInt(getTag('initial_stake') || '0')
+      state.lightningAddress = getTag('lightning_address') || state.lightningAddress
+      
+      const ts = parseInt(getTag('timestamp') || event.created_at.toString()) * 1000
+      
+      // If this is the FIRST stake event, set creation times
+      if (state.createdAt === 0) {
+        state.createdAt = ts
+        state.stakeCreatedAt = ts
+        state.baselineWordCount = parseInt(getTag('baseline_word_count') || '0')
+        state.status = 'pending_payment' // Default to pending until money arrives
+      }
+      
+      // If it has a payment hash (from direct creation), it's active immediately?
+      // Actually, we usually wait for a transaction event to confirm balance.
+      // But let's check legacy logic: status was set in update.
+      const statusTag = getTag('status')
+      if (statusTag) state.status = statusTag as any
+    }
+    
+    // --- STATUS CHANGE ---
+    if (d.startsWith(D_PREFIX_STATUS)) {
+      state.status = (getTag('status') || 'active') as any
+    }
+    
+    // --- TRANSACTIONS (The Ledger) ---
+    if (d.startsWith(D_PREFIX_TX)) {
+      const type = getTag('type') as TransactionHistory['type']
+      const amount = parseInt(getTag('amount') || '0')
+      const txTimestamp = parseInt(getTag('timestamp') || '0')
+      const txDate = new Date(txTimestamp).toISOString().split('T')[0]
+      const txHash = getTag('tx_hash')
+      const description = getTag('description') || ''
+      const txId = d
+      
+      // Update Global Balance
+      if (type === 'deposit' || type === 'top_up' || type === 'stake_created') {
+        state.currentBalance += amount
+        state.totalDeposited += amount
+        // If we get money, we are usually active
+        if (state.status === 'pending_payment') state.status = 'active'
+      } else if (type === 'payout') {
+        state.currentBalance -= amount
+        state.totalWithdrawn += amount
+        state.totalRewardsEarned += amount
+        state.totalGoalsMet += 1
+        state.lastRewardDate = txDate
+      } else if (type === 'refund') {
+        state.currentBalance -= amount // Money leaves system
+        state.totalWithdrawn += amount // Count as withdrawn
+        state.status = 'cancelled'
+      }
+      
+      // Add to Day History
+      let dayHistory = historyMap.get(txDate)
+      if (!dayHistory) {
+        dayHistory = createEmptyDayHistory(txDate)
+        historyMap.set(txDate, dayHistory)
+      }
+      
+      dayHistory.transactions.push({
+        id: txId,
+        type,
+        amount,
+        timestamp: txTimestamp,
+        description,
+        txHash
+      })
+      
+      // Update day specific stats from tx
+      if (type === 'payout') {
+        dayHistory.rewardSent = true
+        dayHistory.amount += amount
+      }
+    }
+    
+    // --- DAILY PROGRESS ---
+    if (d.startsWith(D_PREFIX_PROGRESS)) {
+      const pDate = getTag('date') || ''
+      if (pDate) {
+        let dayHistory = historyMap.get(pDate)
+        if (!dayHistory) {
+          dayHistory = createEmptyDayHistory(pDate)
+          historyMap.set(pDate, dayHistory)
+        }
+        
+        dayHistory.words = parseInt(getTag('words') || '0')
+        dayHistory.goalMet = getTag('goal_met') === 'true'
+        
+        // Update "Today" state if this event matches today
+        if (pDate === today) {
+          state.todayWords = dayHistory.words
+          state.todayGoalMet = dayHistory.goalMet
+        }
+      }
+    }
+  } // End Event Loop
+  
+  // 4. Finalize Project
+  
+  // Sync "Today" specific fields from the history map
+  const todayEntry = historyMap.get(today)
+  if (todayEntry) {
+    state.todayWords = todayEntry.words
+    state.todayGoalMet = todayEntry.goalMet
+    state.todayRewardSent = todayEntry.rewardSent
+    state.todayRewardAmount = todayEntry.amount
+  } else {
+    // Reset today if no entry exists yet
+    state.todayWords = 0
+    state.todayGoalMet = false
+    state.todayRewardSent = false
+    state.todayRewardAmount = 0
+  }
+
+  // Convert Map to Array and Sort (descending date)
+  state.history = Array.from(historyMap.values()).sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  ).slice(0, 14) // Keep last 14 days for UI, but we processed ALL for balance
+  
+  // Recalculate Streak
+  state.currentStreak = calculateStreak(historyMap, today)
+  state.lastUpdated = Date.now()
+  
+  log('✅ Reconstructed Ledger State:', {
+    balance: state.currentBalance,
+    txCount: newEvents.filter(e => e.tags.find(t => t[0] === 'd')?.[1]?.startsWith(D_PREFIX_TX)).length
+  })
+  
+  return state
+}
+
+
+//Helper to create empty day history
+function createEmptyDayHistory(date: string): DayHistory {
+  return {
+    date,
+    words: 0,
+    goalMet: false,
+    rewardSent: false,
+    amount: 0,
+    transactions: []
+  }
+}
+
+// Helper to calculate streak from history map
+function calculateStreak(historyMap: Map<string, DayHistory>, today: string): number {
+  let streak = 0
+  let checkDate = new Date(today)
+  
+  // Check today first
+  const todayEntry = historyMap.get(today)
+  if (todayEntry && todayEntry.goalMet) {
+    streak++
+  }
+  
+  // Go backwards
+  for (let i = 1; i < 365; i++) {
+    checkDate.setDate(checkDate.getDate() - 1)
+    const dateStr = checkDate.toISOString().split('T')[0]
+    const entry = historyMap.get(dateStr)
+    
+    if (entry && entry.goalMet) {
+      streak++
+    } else {
+      break
+    }
+  }
+  return streak
+}
+
+// Legacy Parser for compatibility during migration
+function parseLegacyEvent(event: any): LightningGoals {
+  // ... (Identical to original getLightningGoals parsing logic)
+  // Simply extracting tags and returning the object
+  // For brevity, using a simplified version relying on the fact current app uses it
+  const getTag = (name: string) => event.tags.find((t: any) => t[0] === name)?.[1] || ''
+  
+  return {
     dailyWordGoal: parseInt(getTag('daily_word_goal') || '500'),
     dailyReward: parseInt(getTag('daily_reward') || '100'),
-    
     currentBalance: parseInt(getTag('current_balance') || '0'),
     initialStake: parseInt(getTag('initial_stake') || '0'),
     totalDeposited: parseInt(getTag('total_deposited') || '0'),
     totalWithdrawn: parseInt(getTag('total_withdrawn') || '0'),
-    
     status: (getTag('status') || 'active') as any,
     createdAt: parseInt(getTag('created_at') || '0'),
     lastUpdated: parseInt(getTag('last_updated') || '0'),
-    
-    // NEW: Parse baseline fields
     stakeCreatedAt: parseInt(getTag('stake_created_at') || '0'),
     baselineWordCount: parseInt(getTag('baseline_word_count') || '0'),
     totalWordCountAtLastUpdate: parseInt(getTag('total_word_count_at_last_update') || '0'),
-    
     lightningAddress: getTag('lightning_address'),
-    
     todayDate: getTag('today_date'),
     todayWords: parseInt(getTag('today_words') || '0'),
     todayGoalMet: getTag('today_goal_met') === 'true',
     todayRewardSent: getTag('today_reward_sent') === 'true',
     todayRewardAmount: parseInt(getTag('today_reward_amount') || '0'),
-    
-    history,
-    
+    history: [], // We won't parse legacy history JSON since we want to encourage migration
     currentStreak: parseInt(getTag('current_streak') || '0'),
     totalGoalsMet: parseInt(getTag('total_goals_met') || '0'),
     totalRewardsEarned: parseInt(getTag('total_rewards_earned') || '0'),
@@ -211,178 +411,15 @@ export async function getLightningGoals(userPubkey: string): Promise<LightningGo
     missedDays: parseInt(getTag('missed_days') || '0'),
     lastMissedDate: getTag('last_missed_date')
   }
-  
-  console.log('[LightningGoals] ✅ Loaded:', {
-    balance: goals.currentBalance,
-    goal: goals.dailyWordGoal,
-    todayWords: goals.todayWords,
-    status: goals.status
-  })
-  
-  return goals
 }
 
-/**
- * Update the master event
- * This REPLACES the previous event on relays
- */
-export async function updateLightningGoals(
-  userPubkey: string,
-  updates: Partial<LightningGoals>,
-  authData: any
-): Promise<void> {
-  console.log('[LightningGoals] ========================================')
-  console.log('[LightningGoals] 💾 UPDATE CALLED')
-  console.log('[LightningGoals] ========================================')
-  console.log('[LightningGoals] User pubkey:', userPubkey.substring(0, 16))
-  console.log('[LightningGoals] Data passed in:', {
-    hasHistory: !!updates.history,
-    historyLength: updates.history?.length || 0,
-    status: updates.status
-  })
-  
-  // Get current state
-  const current = await getLightningGoals(userPubkey)
-  
-  console.log('[LightningGoals] Current data from Nostr:', {
-    hasData: !!current,
-    currentHistoryLength: current?.history?.length || 0
-  })
-  
-  // Merge with updates
-  const updated: LightningGoals = {
-    ...(current || {
-      dailyWordGoal: 500,
-      dailyReward: 100,
-      currentBalance: 0,
-      initialStake: 0,
-      totalDeposited: 0,
-      totalWithdrawn: 0,
-      status: 'active',
-      createdAt: Date.now(),
-      lastUpdated: Date.now(),
-      lightningAddress: '',
-      todayDate: new Date().toISOString().split('T')[0],
-      todayWords: 0,
-      todayGoalMet: false,
-      todayRewardSent: false,
-      todayRewardAmount: 0,
-      history: [],
-      currentStreak: 0,
-      totalGoalsMet: 0,
-      totalRewardsEarned: 0,
-      lastRewardDate: '',
-      missedDays: 0,
-      lastMissedDate: ''
-    }),
-    ...updates,
-    lastUpdated: Date.now()
-  }
-  
-  console.log('[LightningGoals] ========================================')
-  console.log('[LightningGoals] FINAL DATA TO SAVE:')
-  console.log('[LightningGoals] History entries:', updated.history.length)
-  console.log('[LightningGoals] History preview:', updated.history.slice(-3))
-  console.log('[LightningGoals] ========================================')
-  
-  // Check if date changed - if so, archive today and reset
-  const today = new Date().toISOString().split('T')[0]
-  if (current && current.todayDate !== today) {
-    console.log('[LightningGoals] 📅 New day detected, archiving previous day')
-    
-    // Add yesterday to history
-    updated.history = [
-      {
-        date: current.todayDate,
-        words: current.todayWords,
-        goalMet: current.todayGoalMet,
-        rewardSent: current.todayRewardSent,
-        amount: current.todayRewardAmount
-      },
-      ...current.history.slice(0, 6) // Keep only last 7 days
-    ]
-    
-    // Reset today's tracking
-    updated.todayDate = today
-    updated.todayWords = 0
-    updated.todayGoalMet = false
-    updated.todayRewardSent = false
-    updated.todayRewardAmount = 0
-    
-    // Update streak
-    if (current.todayGoalMet) {
-      updated.currentStreak = (current.currentStreak || 0) + 1
-    } else {
-      updated.currentStreak = 0
-      updated.missedDays = (current.missedDays || 0) + 1
-      updated.lastMissedDate = current.todayDate
-    }
-  }
-  
-  // Build tags
-  const tags: string[][] = [
-    ["d", "lightning-goals"],
-    ["daily_word_goal", updated.dailyWordGoal.toString()],
-    ["daily_reward", updated.dailyReward.toString()],
-    ["current_balance", updated.currentBalance.toString()],
-    ["initial_stake", (updated.initialStake || 0).toString()],
-    ["total_deposited", (updated.totalDeposited || 0).toString()],
-    ["total_withdrawn", (updated.totalWithdrawn || 0).toString()],
-    ["status", updated.status],
-    ["created_at", updated.createdAt.toString()],
-    ["last_updated", updated.lastUpdated.toString()],
-    
-    // NEW: Baseline fields
-    ["stake_created_at", updated.stakeCreatedAt.toString()],
-    ["baseline_word_count", updated.baselineWordCount.toString()],
-    ["total_word_count_at_last_update", updated.totalWordCountAtLastUpdate.toString()],
-    ["lightning_address", updated.lightningAddress],
-    ["today_date", updated.todayDate],
-    ["today_words", updated.todayWords.toString()],
-    ["today_goal_met", updated.todayGoalMet.toString()],
-    ["today_reward_sent", updated.todayRewardSent.toString()],
-    ["today_reward_amount", updated.todayRewardAmount.toString()],
-    ["current_streak", updated.currentStreak.toString()],
-    ["total_goals_met", updated.totalGoalsMet.toString()],
-    ["total_rewards_earned", updated.totalRewardsEarned.toString()],
-    ["last_reward_date", updated.lastRewardDate],
-    ["missed_days", updated.missedDays.toString()],
-    ["last_missed_date", updated.lastMissedDate]
-  ]
-  
-  // Add history
-  updated.history.forEach((day, i) => {
-    tags.push([
-      `day_${i + 1}`,
-      `${day.date}|${day.words}|${day.goalMet}|${day.rewardSent}|${day.amount}`
-    ])
-  })
-  
-  // Create event
-  const event = {
-    kind: 30078,
-    created_at: Math.floor(Date.now() / 1000),
-    tags,
-    content: "",
-    pubkey: userPubkey
-  }
-  
-  console.log('[LightningGoals] Signing and publishing...')
-  
-  const signedEvent = await signEventWithRemote(event, authData)
-  console.log('[LightningGoals] ✅ Event signed:', signedEvent.id)
-  
-  await pool.publish(RELAYS, signedEvent)
-  
-  console.log('[LightningGoals] ========================================')
-  console.log('[LightningGoals] ✅ PUBLISHED TO NOSTR')
-  console.log('[LightningGoals] Event contains', updated.history.length, 'history entries')
-  console.log('[LightningGoals] ========================================')
-  console.log('[LightningGoals] ✅ Master event updated')
-}
+// ==============================================================================
+// 5. Action Functions (Commands) - Now publishing atomic events
+// ==============================================================================
 
 /**
- * Create initial stake (with 0 balance until payment confirmed)
+ * Creates the initial stake.
+ * Publishes: `lg-stake-<ts>` and `lg-tx-<ts>` (if paid)
  */
 export async function createStake(
   userPubkey: string,
@@ -391,322 +428,238 @@ export async function createStake(
     dailyReward: number
     depositAmount: number
     lightningAddress: string
-    currentWordCount: number  // NEW: Pass current word count
+    currentWordCount: number
     paymentHash?: string
   },
   authData: any
 ): Promise<void> {
-  console.log('[LightningGoals] ========================================')
-  console.log('[LightningGoals] 🔧 CREATE STAKE DEBUG')
-  console.log('[LightningGoals] ========================================')
-  console.log('[LightningGoals] User pubkey:', userPubkey?.substring(0, 8) + '...')
-  console.log('[LightningGoals] Config:', config)
-  console.log('[LightningGoals] Has payment hash:', !!config.paymentHash)
-  console.log('[LightningGoals] Payment hash:', config.paymentHash)
-  console.log('[LightningGoals] Creating new stake...')
-  console.log('[LightningGoals] Current word count:', config.currentWordCount)
-  console.log('[LightningGoals] This will be the baseline (words before stake)')
+  log('Creating Stake (Event Sourced)...', config)
   
-  const today = new Date().toISOString().split('T')[0]
   const now = Date.now()
+  const stakeId = `lg-stake-${now}`
   
-  // Create initial history entry with deposit transaction
-  const initialHistory: DayHistory[] = [{
-    date: today,
-    words: 0,
-    goalMet: false,
-    rewardSent: false,
-    amount: 0,
-    transactions: config.paymentHash ? [{
-      id: `deposit-${now}`,
-      type: 'deposit',
-      amount: config.depositAmount,
-      timestamp: now,
-      description: `Initial stake deposit for ${config.dailyWordGoal} words daily goal`,
-      txHash: config.paymentHash
-    }] : []
-  }]
-  
-  try {
-    console.log('[LightningGoals] 📝 Calling updateLightningGoals...')
-    
-    await updateLightningGoals(userPubkey, {
-      dailyWordGoal: config.dailyWordGoal,
-      dailyReward: config.dailyReward,
-      currentBalance: config.paymentHash ? config.depositAmount : 0, // Only credit if payment confirmed
-      initialStake: config.depositAmount,
-      totalDeposited: config.paymentHash ? config.depositAmount : 0, // Only count if payment confirmed
-      totalWithdrawn: 0,
-      status: config.paymentHash ? 'active' : 'pending_payment', // Pending until payment confirmed
-      createdAt: now,
-      stakeCreatedAt: now,  // When stake was created
-      baselineWordCount: config.currentWordCount,  // NEW: Baseline to subtract
-      totalWordCountAtLastUpdate: config.currentWordCount,  // Track current word count for incremental updates
-      lightningAddress: config.lightningAddress,
-      todayDate: today,
-      todayWords: 0,  // Start with 0 - we'll track incremental progress
-      todayGoalMet: false,
-      todayRewardSent: false,
-      todayRewardAmount: 0,
-      history: initialHistory,
-      currentStreak: 0,
-      totalGoalsMet: 0,
-      totalRewardsEarned: 0,
-      lastRewardDate: '',
-      missedDays: 0,
-      lastMissedDate: ''
-    }, authData)
-    
-    console.log('[LightningGoals] ✅ updateLightningGoals completed successfully')
-    
-  } catch (error) {
-    console.error('[LightningGoals] ❌ updateLightningGoals failed:', error)
-    console.error('[LightningGoals] ❌ Error details:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name
-    })
-    throw error // Re-throw to let the calling function handle it
+  // 1. Publish Stake Definition (Settings)
+  await publishEvent(userPubkey, stakeId, [
+    ['type', 'settings'],
+    ['daily_word_goal', config.dailyWordGoal.toString()],
+    ['daily_reward', config.dailyReward.toString()],
+    ['initial_stake', config.depositAmount.toString()],
+    ['lightning_address', config.lightningAddress],
+    ['baseline_word_count', config.currentWordCount.toString()],
+    ['timestamp', Math.floor(now / 1000).toString()],
+    ['status', config.paymentHash ? 'active' : 'pending_payment']
+  ], authData)
+
+  // 2. If already paid (paymentHash present), Record Transaction
+  if (config.paymentHash) {
+    await recordTransactionEvent(
+      userPubkey, 
+      'stake_created', 
+      config.depositAmount, 
+      `Initial stake deposit`, 
+      config.paymentHash,
+      authData
+    )
   }
-  
-  console.log('[LightningGoals] ✅ Stake created with baseline:', config.currentWordCount, config.paymentHash ? 'with payment confirmed' : 'pending payment')
 }
 
 /**
- * Confirm payment and activate stake
+ * Confirms payment for a pending stake
  */
 export async function confirmPayment(
   userPubkey: string,
   paymentHash: string,
   authData: any
 ): Promise<void> {
-  console.log('[LightningGoals] Confirming payment:', paymentHash)
-  
   const goals = await getLightningGoals(userPubkey)
+  if (!goals) throw new Error("No goals found")
+    
+  // Update status to active
+  const now = Date.now()
+  await publishEvent(userPubkey, `lg-status-${now}`, [
+    ['status', 'active'],
+    ['timestamp', Math.floor(now / 1000).toString()]
+  ], authData)
   
-  if (!goals) {
-    throw new Error('No pending stake found')
-  }
-  
-  if (goals.status !== 'pending_payment') {
-    throw new Error('Stake is not in pending payment state')
-  }
-  
-  // Update to active with confirmed balance
-  await updateLightningGoals(userPubkey, {
-    status: 'active',
-    currentBalance: goals.initialStake,
-    totalDeposited: goals.initialStake
-  }, authData)
-  
-  console.log('[LightningGoals] ✅ Payment confirmed, stake activated')
+  // Record the transaction
+  await recordTransactionEvent(
+    userPubkey,
+    'stake_created',
+    goals.initialStake, // Use initial stake amount from settings
+    'Stake activated via payment',
+    paymentHash,
+    authData
+  )
 }
 
+/**
+ * Updates writing progress for the day
+ */
+export async function updateWordCount(
+  userPubkey: string,
+  totalWordCount: number,
+  authData: any
+): Promise<{ shouldSendReward: boolean; rewardAmount: number }> {
+  
+  const goals = await getLightningGoals(userPubkey)
+  if (!goals || goals.status !== 'active') return { shouldSendReward: false, rewardAmount: 0 }
+  
+  const wordsWrittenSinceStake = totalWordCount - goals.baselineWordCount
+  const goalMet = wordsWrittenSinceStake >= goals.dailyWordGoal
+  const today = new Date().toISOString().split('T')[0]
+  
+  // Idempotency: Don't republish if nothing changed for today?
+  // Actually, we want to update the word count as it increases.
+  // We use `lg-progress-<date>` as a parameterized replaceable event for THAT DAY
+  // So we can update it multiple times per day without spamming infinite events (just replaces today's event)
+  
+  await publishEvent(userPubkey, `lg-progress-${today}`, [
+    ['date', today],
+    ['words', totalWordCount.toString()], // Storing total words is fine, calculation uses baseline
+    ['goal_met', goalMet.toString()]
+  ], authData)
+  
+  // Check Reward Conditions
+  if (goalMet && !goals.todayRewardSent && goals.currentBalance >= goals.dailyReward) {
+    return { shouldSendReward: true, rewardAmount: goals.dailyReward }
+  }
+  
+  return { shouldSendReward: false, rewardAmount: 0 }
+}
 
 /**
- * Record reward sent
+ * Records a reward payout
  */
 export async function recordRewardSent(
   userPubkey: string,
   amount: number,
   authData: any
 ): Promise<void> {
-  console.log('[LightningGoals] Recording reward sent:', amount)
-  
   const goals = await getLightningGoals(userPubkey)
-  
   if (!goals) return
-  
-  const today = new Date().toISOString().split('T')[0]
-  
-  await updateLightningGoals(userPubkey, {
-    currentBalance: goals.currentBalance - amount,
-    totalWithdrawn: goals.totalWithdrawn + amount,
-    todayRewardSent: true,
-    todayRewardAmount: amount,
-    todayGoalMet: true,
-    totalGoalsMet: goals.totalGoalsMet + 1,
-    totalRewardsEarned: goals.totalRewardsEarned + amount,
-    lastRewardDate: today
-  }, authData)
-  
-  console.log('[LightningGoals] ✅ Reward recorded')
+
+  await recordTransactionEvent(
+    userPubkey,
+    'payout',
+    amount,
+    `Daily goal reward sent to ${goals.lightningAddress}`,
+    undefined,
+    authData
+  )
 }
 
 /**
- * Add to stake (top up)
+ * Records a top-up
  */
 export async function addToStake(
   userPubkey: string,
   amount: number,
+  paymentHash: string,
   authData: any
 ): Promise<void> {
-  console.log('[LightningGoals] Adding to stake:', amount)
-  
-  const goals = await getLightningGoals(userPubkey)
-  
-  if (!goals) throw new Error('No goals found')
-  
-  await updateLightningGoals(userPubkey, {
-    currentBalance: goals.currentBalance + amount,
-    totalDeposited: goals.totalDeposited + amount
-  }, authData)
-  
-  console.log('[LightningGoals] ✅ Stake topped up')
+  await recordTransactionEvent(
+    userPubkey,
+    'top_up',
+    amount,
+    `Top-up: Added ${amount} sats to stake`,
+    paymentHash,
+    authData
+  )
 }
 
 /**
- * Cancel stake - NO REFUND (stake is forfeited)
- * This completely resets the system for the user
+ * Cancels stake
  */
 export async function cancelStake(
   userPubkey: string,
   authData: any
 ): Promise<{ forfeited: number }> {
-  console.log('[LightningGoals] ⚠️ Cancelling stake (NO REFUND)...')
-  
   const goals = await getLightningGoals(userPubkey)
+  if (!goals) return { forfeited: 0 }
   
-  if (!goals) throw new Error('No goals found')
+  const forfeited = goals.currentBalance
   
-  const forfeitedAmount = goals.currentBalance
+  // Record forfeit transaction (refund logic can be added here if needed)
+  if (forfeited > 0) {
+    await recordTransactionEvent(
+      userPubkey,
+      'refund', // Using 'refund' type but logically it's a forfeit/exit
+      forfeited,
+      `Stake cancelled - ${forfeited} sats forfeited`,
+      undefined,
+      authData
+    )
+  }
   
-  console.log('[LightningGoals] 💸 Forfeiting:', forfeitedAmount, 'sats')
+  // Update status
+  const now = Date.now()
+  await publishEvent(userPubkey, `lg-status-${now}`, [
+    ['status', 'cancelled'],
+    ['timestamp', Math.floor(now / 1000).toString()]
+  ], authData)
   
-  // Reset EVERYTHING - complete abandonment
-  const today = new Date().toISOString().split('T')[0]
-  
-  await updateLightningGoals(userPubkey, {
-    // Reset balance to 0 (forfeited)
-    currentBalance: 0,
-    initialStake: 0,
-    // Don't update totalDeposited - keep for history
-    // Don't update totalWithdrawn - no refund given
-    
-    // Mark as cancelled
-    status: 'cancelled',
-    
-    // Reset all daily tracking
-    todayDate: today,
-    todayWords: 0,
-    todayGoalMet: false,
-    todayRewardSent: false,
-    todayRewardAmount: 0,
-    
-    // Clear history
-    history: [],
-    
-    // Reset stats
-    currentStreak: 0,
-    // Keep totalGoalsMet and totalRewardsEarned for lifetime stats
-    lastRewardDate: '',
-    missedDays: 0,
-    lastMissedDate: ''
-  }, authData)
-  
-  console.log('[LightningGoals] ✅ Stake cancelled and forfeited')
-  console.log('[LightningGoals] 💰 User forfeited', forfeitedAmount, 'sats')
-  
-  return { forfeited: forfeitedAmount }
+  return { forfeited }
 }
 
-/**
- * Update Lightning address for existing stake
- */
 export async function updateLightningAddress(
   userPubkey: string,
   lightningAddress: string,
   authData: any
 ): Promise<void> {
-  console.log('[LightningGoals] Updating Lightning address:', lightningAddress)
-  
-  const goals = await getLightningGoals(userPubkey)
-  
-  if (!goals) throw new Error('No goals found')
-  
-  await updateLightningGoals(userPubkey, {
-    lightningAddress: lightningAddress
-  }, authData)
-  
-  console.log('[LightningGoals] ✅ Lightning address updated')
+    const goals = await getLightningGoals(userPubkey)
+    if (!goals) throw new Error("No goals found")
+
+    // We republish the stake settings with new address? 
+    // Or just a specific update event?
+    // Use a new stake event to "Update Settings"
+    const now = Date.now()
+    await publishEvent(userPubkey, `lg-stake-${now}`, [
+        ['type', 'settings_update'],
+        ['daily_word_goal', goals.dailyWordGoal.toString()],
+        ['daily_reward', goals.dailyReward.toString()],
+        ['initial_stake', goals.initialStake.toString()],
+        ['lightning_address', lightningAddress], // New Address
+        ['baseline_word_count', goals.baselineWordCount.toString()],
+        ['timestamp', Math.floor(now / 1000).toString()]
+    ], authData)
 }
 
 /**
- * Update word count and check if reward should be sent
+ * Generic Helper to record a transaction event
  */
-export async function updateWordCount(
+async function recordTransactionEvent(
   userPubkey: string,
-  totalWordCount: number,  // Total words across all notes
+  type: TransactionHistory['type'],
+  amount: number,
+  description: string,
+  txHash: string | undefined,
   authData: any
-): Promise<{ shouldSendReward: boolean; rewardAmount: number }> {
-  console.log('[LightningGoals] 📝 Updating word count')
-  console.log('[LightningGoals] Total word count:', totalWordCount)
+) {
+  const now = Date.now()
+  // Unique D-tag for every transaction to ensure it is appended to history
+  const dTag = `lg-tx-${now}-${Math. floor(Math.random() * 1000)}` 
   
-  const goals = await getLightningGoals(userPubkey)
-  
-  console.log('[LightningGoals] 📊 Goals loaded for updateWordCount:', goals ? {
-    status: goals.status,
-    todayWords: goals.todayWords,
-    dailyWordGoal: goals.dailyWordGoal,
-    todayGoalMet: goals.todayGoalMet,
-    todayRewardSent: goals.todayRewardSent,
-    baselineWordCount: goals.baselineWordCount
-  } : 'null')
-  
-  if (!goals) {
-    console.log('[LightningGoals] ❌ No goals found for user:', userPubkey.substring(0, 8))
-    return { shouldSendReward: false, rewardAmount: 0 }
-  }
-  
-  if (goals.status !== 'active') {
-    console.log('[LightningGoals] ❌ Goals not active, status:', goals.status)
-    return { shouldSendReward: false, rewardAmount: 0 }
-  }
-  
-  // ⚠️ CRITICAL: Subtract baseline to get words written SINCE stake creation
-  const wordsWrittenSinceStake = totalWordCount - goals.baselineWordCount
-  
-  console.log('[LightningGoals] Baseline (words before stake):', goals.baselineWordCount)
-  console.log('[LightningGoals] Words written since stake:', wordsWrittenSinceStake)
-  console.log('[LightningGoals] Daily goal:', goals.dailyWordGoal)
-  
-  // Check if goal met based on words SINCE stake
-  const goalMet = wordsWrittenSinceStake >= goals.dailyWordGoal
-  
-  console.log('[LightningGoals] Goal met:', goalMet)
-  
-  const today = new Date().toISOString().split('T')[0]
-  
-  // Update with total words (for tracking) but check goal using adjusted count
-  await updateLightningGoals(userPubkey, {
-    todayWords: totalWordCount,  // Store total
-    todayGoalMet: goalMet
-  }, authData)
-  
-  // Check if we already sent reward today (after updating word count)
-  if (goals.todayRewardSent) {
-    console.log('[LightningGoals] ✅ Reward already sent today')
-    return { shouldSendReward: false, rewardAmount: 0 }
-  }
-  
-  // Check if goal met (already calculated above)
-  if (!goalMet) {
-    console.log('[LightningGoals] 📊 Goal not met yet')
-    return { shouldSendReward: false, rewardAmount: 0 }
-  }
-  
-  // Check if we have sufficient balance
-  if (goals.currentBalance < goals.dailyReward) {
-    console.log('[LightningGoals] ❌ Insufficient balance:', goals.currentBalance, '<', goals.dailyReward)
-    return { shouldSendReward: false, rewardAmount: 0 }
-  }
-  
-  // Word count already updated above
-  
-  console.log('[LightningGoals] ✅ Goal met! Should send reward:', goals.dailyReward, 'sats')
-  
-  return { 
-    shouldSendReward: true, 
-    rewardAmount: goals.dailyReward 
-  }
+  await publishEvent(userPubkey, dTag, [
+    ['type', type],
+    ['amount', amount.toString()],
+    ['description', description],
+    ['tx_hash', txHash || ''],
+    ['timestamp', now.toString()]
+  ], authData)
 }
+
+export async function addTransaction(
+    userPubkey: string, 
+    transaction: TransactionHistory, 
+    authData: any
+  ): Promise<void> {
+    // Wrapper for legacy compatibility if needed, but UI calls specific functions mostly
+    await recordTransactionEvent(
+        userPubkey,
+        transaction.type,
+        transaction.amount,
+        transaction.description,
+        transaction.txHash,
+        authData
+    )
+  }

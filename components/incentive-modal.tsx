@@ -6,17 +6,17 @@ import { X, Zap, CheckCircle, XCircle, DollarSign, CreditCard, RotateCcw, Smartp
 import { BitcoinConnectLightningGoalsManager } from './bitcoin-connect-lightning-goals-manager'
 import { TopUpBalance } from './top-up-balance'
 
-function LightningGoalsSummary({ 
-  goals, 
-  currentWordCount, 
-  userPubkey, 
-  authData, 
+function LightningGoalsSummary({
+  goals,
+  currentWordCount,
+  userPubkey,
+  authData,
   onRefresh,
   onSetupStatusChange,
   onClose,
   onStreakUpdate,
   onStakeActivated
-}: { 
+}: {
   goals: any
   currentWordCount: number
   userPubkey: string
@@ -29,41 +29,37 @@ function LightningGoalsSummary({
 }) {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
   const [activeTab, setActiveTab] = useState<'progress' | 'history'>('progress')
-  
+
   // Fix negative numbers by properly handling baseline word count
   const wordsSinceStake = Math.max(0, currentWordCount - (goals.baselineWordCount || 0))
   const progressPercentage = Math.min(100, (wordsSinceStake / goals.dailyWordGoal) * 100)
   const wordsToGo = Math.max(0, goals.dailyWordGoal - wordsSinceStake)
-  
+
   const handleCancelStake = async () => {
     try {
-      const { updateLightningGoals } = await import('@/lib/lightning-goals')
-      await updateLightningGoals(userPubkey, {
-        ...goals,
-        status: 'cancelled',
-        lastUpdated: Date.now()
-      }, authData)
-      
+      const { cancelStake } = await import('@/lib/lightning-goals')
+      await cancelStake(userPubkey, authData)
+
       console.log('[Summary] ✅ Stake cancelled')
       setShowCancelConfirm(false)
-      
+
       // Reset header status to show "Set Up Daily Goal"
       if (onSetupStatusChange) {
         onSetupStatusChange(false)
       }
-      
+
       // Close the modal after successful cancellation
       if (onClose) {
         onClose()
       }
-      
+
       onRefresh()
     } catch (error) {
       console.error('[Summary] ❌ Error cancelling stake:', error)
       alert('Failed to cancel stake: ' + error.message)
     }
   }
-  
+
   return (
     <div className="space-y-6">
       {/* Status Header */}
@@ -74,136 +70,132 @@ function LightningGoalsSummary({
         <h2 className="text-2xl font-bold text-green-600">Active Lightning Goal</h2>
         <p className="text-gray-600 dark:text-gray-400">Write {goals.dailyWordGoal} words daily to earn rewards</p>
       </div>
-      
+
       {/* Tabs */}
       <div className="flex border-b border-gray-200 dark:border-gray-700">
         <button
           onClick={() => setActiveTab('progress')}
-          className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${
-            activeTab === 'progress'
-              ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-          }`}
+          className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${activeTab === 'progress'
+            ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
         >
           Progress
         </button>
         <button
           onClick={() => setActiveTab('history')}
-          className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${
-            activeTab === 'history'
-              ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
-              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-          }`}
+          className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${activeTab === 'history'
+            ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+            }`}
         >
           History
         </button>
       </div>
-      
+
       {/* Tab Content */}
       {activeTab === 'progress' ? (
         <>
           {/* Progress Section */}
           <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Today's Progress</h3>
-          <span className="text-sm text-gray-500 dark:text-gray-400">
-            {wordsSinceStake} / {goals.dailyWordGoal} words
-          </span>
-        </div>
-        
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
-          <div 
-            className={`h-3 rounded-full transition-all duration-500 ${
-              wordsSinceStake >= goals.dailyWordGoal 
-                ? 'bg-gradient-to-r from-green-500 to-green-600' 
-                : 'bg-gradient-to-r from-orange-500 to-orange-600'
-            }`}
-            style={{ width: `${progressPercentage}%` }}
-          />
-        </div>
-        
-        {wordsSinceStake >= goals.dailyWordGoal ? (
-          <div className="text-center space-y-2">
-            <p className="text-green-600 dark:text-green-400 font-medium text-lg flex items-center justify-center gap-2">
-              {goals.todayRewardSent ? (
-                <>
-                  <CheckCircle className="w-5 h-5" />
-                  Reward sent!
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-5 h-5" />
-                  Goal complete! Processing reward...
-                </>
-              )}
-            </p>
-            {goals.todayRewardSent && (
-              <p className="text-green-700 dark:text-green-300 text-sm font-medium">
-                Rewards have been paid out today for reaching your goal
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Today's Progress</h3>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {wordsSinceStake} / {goals.dailyWordGoal} words
+              </span>
+            </div>
+
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-4">
+              <div
+                className={`h-3 rounded-full transition-all duration-500 ${wordsSinceStake >= goals.dailyWordGoal
+                  ? 'bg-gradient-to-r from-green-500 to-green-600'
+                  : 'bg-gradient-to-r from-orange-500 to-orange-600'
+                  }`}
+                style={{ width: `${progressPercentage}%` }}
+              />
+            </div>
+
+            {wordsSinceStake >= goals.dailyWordGoal ? (
+              <div className="text-center space-y-2">
+                <p className="text-green-600 dark:text-green-400 font-medium text-lg flex items-center justify-center gap-2">
+                  {goals.todayRewardSent ? (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      Reward sent!
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      Goal complete! Processing reward...
+                    </>
+                  )}
+                </p>
+                {goals.todayRewardSent && (
+                  <p className="text-green-700 dark:text-green-300 text-sm font-medium">
+                    Rewards have been paid out today for reaching your goal
+                  </p>
+                )}
+              </div>
+            ) : (
+              <p className="text-center text-gray-600 dark:text-gray-400">
+                {wordsToGo} words to go
               </p>
             )}
           </div>
-        ) : (
-          <p className="text-center text-gray-600 dark:text-gray-400">
-            {wordsToGo} words to go
-          </p>
-        )}
-      </div>
-      
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{goals.dailyReward}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Daily Reward (sats)</div>
-        </div>
-        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-green-600 dark:text-green-400">{goals.currentBalance}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Current Balance (sats)</div>
-        </div>
-        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{goals.currentStreak || 0}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Day Streak</div>
-        </div>
-        <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg text-center">
-          <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{goals.totalGoalsMet || 0}</div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">Goals Met</div>
-        </div>
-      </div>
-      
 
-      {/* Top Up Balance Section */}
-      <TopUpBalance
-        userPubkey={userPubkey}
-        authData={authData}
-        currentBalance={goals.currentBalance}
-        onTopUpComplete={async () => {
-          // Refresh goals in the modal
-          await onRefresh()
-          // Also refresh the parent component (main-app) to update header balance
-          if (onStakeActivated) {
-            await onStakeActivated()
-          }
-        }}
-      />
-      
-      {/* Actions */}
-      <div className="flex gap-3">
-        <Button 
-          onClick={onRefresh}
-          variant="outline"
-          className="flex-1"
-        >
-          Refresh
-        </Button>
-        <Button 
-          onClick={() => setShowCancelConfirm(true)}
-          variant="destructive"
-          className="flex-1"
-        >
-          Cancel Stake
-        </Button>
-      </div>
-      
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{goals.dailyReward}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Daily Reward (sats)</div>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{goals.currentBalance}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Current Balance (sats)</div>
+            </div>
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{goals.currentStreak || 0}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Day Streak</div>
+            </div>
+            <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{goals.totalGoalsMet || 0}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Goals Met</div>
+            </div>
+          </div>
+
+
+          {/* Top Up Balance Section */}
+          <TopUpBalance
+            userPubkey={userPubkey}
+            authData={authData}
+            currentBalance={goals.currentBalance}
+            onTopUpComplete={async () => {
+              // Refresh goals in the modal
+              await onRefresh()
+              // Also refresh the parent component (main-app) to update header balance
+              if (onStakeActivated) {
+                await onStakeActivated()
+              }
+            }}
+          />
+
+          {/* Actions */}
+          <div className="flex gap-3">
+            <Button
+              onClick={onRefresh}
+              variant="outline"
+              className="flex-1"
+            >
+              Refresh
+            </Button>
+            <Button
+              onClick={() => setShowCancelConfirm(true)}
+              variant="destructive"
+              className="flex-1"
+            >
+              Cancel Stake
+            </Button>
+          </div>
           {/* Lightning Address */}
           <div className="text-center text-sm text-gray-500">
             <p>Rewards sent to: <span className="font-mono">{goals.lightningAddress}</span></p>
@@ -228,7 +220,7 @@ function LightningGoalsSummary({
 
                     {/* Day Summary */}
                     <div className="flex items-center gap-2 mb-2">
-                            {day.goalMet ? (
+                      {day.goalMet ? (
                         <div className="flex items-center gap-1 text-green-600 dark:text-green-400 text-sm font-medium">
                           <CheckCircle className="w-4 h-4" />
                           <span>Goal Achieved</span>
@@ -287,7 +279,7 @@ function LightningGoalsSummary({
                                 <div className="flex-1">
                                   <div className="font-medium text-green-700 dark:text-green-300">Goal Achieved</div>
                                   <div className="text-xs text-gray-600 dark:text-gray-400">{tx.description}</div>
-                        </div>
+                                </div>
                               </>
                             )}
                             {tx.type === 'goal_missed' && (
@@ -298,8 +290,8 @@ function LightningGoalsSummary({
                                   <div className="text-xs text-gray-600 dark:text-gray-400">{tx.description}</div>
                                 </div>
                               </>
-                                )}
-                                {tx.type === 'payout' && (
+                            )}
+                            {tx.type === 'payout' && (
                               <>
                                 <Zap className="w-4 h-4 text-orange-600 dark:text-orange-400 mt-0.5" />
                                 <div className="flex-1">
@@ -320,11 +312,11 @@ function LightningGoalsSummary({
                                   </div>
                                 </div>
                               </>
-                                )}
-                              </div>
-                            ))}
+                            )}
                           </div>
-                        )}
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -332,17 +324,17 @@ function LightningGoalsSummary({
               <p className="text-gray-500 dark:text-gray-400 text-center py-4">No activity yet</p>
             )}
           </div>
-          
+
           {/* Actions for History Tab */}
           <div className="flex gap-3">
-            <Button 
+            <Button
               onClick={onRefresh}
               variant="outline"
               className="flex-1"
             >
               Refresh
             </Button>
-            <Button 
+            <Button
               onClick={() => setShowCancelConfirm(true)}
               variant="destructive"
               className="flex-1"
@@ -350,7 +342,7 @@ function LightningGoalsSummary({
               Cancel Stake
             </Button>
           </div>
-          
+
           {/* Lightning Address */}
           <div className="text-center text-sm text-gray-500">
             <p>Rewards sent to: <span className="font-mono">{goals.lightningAddress}</span></p>
@@ -371,14 +363,14 @@ function LightningGoalsSummary({
                 Are you sure you want to cancel your current stake? You will not receive a refund of your {goals.currentBalance} sats balance.
               </p>
               <div className="flex gap-3">
-                <Button 
+                <Button
                   onClick={() => setShowCancelConfirm(false)}
                   variant="outline"
                   className="flex-1"
                 >
                   Keep Goal
                 </Button>
-                <Button 
+                <Button
                   onClick={handleCancelStake}
                   variant="destructive"
                   className="flex-1"
@@ -441,9 +433,9 @@ export function IncentiveModal({
       try {
         console.log('[IncentiveModal] 🔧 Initializing remote signer for Lightning Goals...')
         const { resumeSession } = await import('@/lib/auth/unified-remote-signer')
-        
+
         const resumed = await resumeSession()
-        
+
         if (resumed) {
           console.log('[IncentiveModal] ✅ Remote signer initialized for Lightning Goals')
         } else {
@@ -460,11 +452,11 @@ export function IncentiveModal({
       setLoading(true)
       const { getLightningGoals } = await import('@/lib/lightning-goals')
       const data = await getLightningGoals(userPubkey)
-      
+
       console.log('[IncentiveModal] 📊 Loaded goals:', data)
       setGoals(data)
       setHasSetup(data && data.status === 'active')
-      
+
       if (onSetupStatusChange) {
         onSetupStatusChange(data && data.status === 'active')
       }
@@ -487,7 +479,7 @@ export function IncentiveModal({
   if (!isOpen) return null
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -505,7 +497,7 @@ export function IncentiveModal({
             <X className="w-4 h-4" />
           </Button>
         </div>
-        
+
         <div className="p-6">
           {loading ? (
             <div className="text-center py-8">
@@ -513,11 +505,11 @@ export function IncentiveModal({
               <p className="text-gray-600">Loading Lightning Goals...</p>
             </div>
           ) : (() => {
-            console.log('[IncentiveModal] 🔍 Conditional check:', { 
-              hasGoals: !!goals, 
-              goalsStatus: goals?.status, 
-              hasSetup, 
-              shouldShowSummary: goals && goals.status === 'active' 
+            console.log('[IncentiveModal] 🔍 Conditional check:', {
+              hasGoals: !!goals,
+              goalsStatus: goals?.status,
+              hasSetup,
+              shouldShowSummary: goals && goals.status === 'active'
             })
             return goals && goals.status === 'active'
           })() ? (
@@ -532,33 +524,33 @@ export function IncentiveModal({
               onStreakUpdate={onStreakUpdate}
               onStakeActivated={onStakeActivated}
             />
-                ) : (
-                  <BitcoinConnectLightningGoalsManager
-                    userPubkey={userPubkey}
-                    authData={authData}
-                    currentWordCount={lastSavedWordCount || 0}
-                    onStreakUpdate={onStreakUpdate}
-                    onStakeActivated={async () => {
-                      console.log('[IncentiveModal] 🎉 Stake activated, switching to Progress/Summary...')
-                      
-                      // Wait a moment for the stake to be published to relays
-                      await new Promise(resolve => setTimeout(resolve, 2000))
-                      
-                      // Reload goals data to get the latest information
-                      await loadGoals()
-                      
-                      // Force modal to show Progress/Summary screen after data is loaded
-                      setHasSetup(true)
-                      
-                      // Also trigger parent component refresh for header updates
-                      if (onSetupStatusChange) {
-                        onSetupStatusChange(true)
-                      }
-                      console.log('[IncentiveModal] ✅ Modal should now show Progress/Summary screen')
-                    }}
-                    onSetupStatusChange={setHasSetup}
-                  />
-                )}
+          ) : (
+            <BitcoinConnectLightningGoalsManager
+              userPubkey={userPubkey}
+              authData={authData}
+              currentWordCount={lastSavedWordCount || 0}
+              onStreakUpdate={onStreakUpdate}
+              onStakeActivated={async () => {
+                console.log('[IncentiveModal] 🎉 Stake activated, switching to Progress/Summary...')
+
+                // Wait a moment for the stake to be published to relays
+                await new Promise(resolve => setTimeout(resolve, 2000))
+
+                // Reload goals data to get the latest information
+                await loadGoals()
+
+                // Force modal to show Progress/Summary screen after data is loaded
+                setHasSetup(true)
+
+                // Also trigger parent component refresh for header updates
+                if (onSetupStatusChange) {
+                  onSetupStatusChange(true)
+                }
+                console.log('[IncentiveModal] ✅ Modal should now show Progress/Summary screen')
+              }}
+              onSetupStatusChange={setHasSetup}
+            />
+          )}
         </div>
       </div>
     </div>

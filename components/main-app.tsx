@@ -92,7 +92,7 @@ const SyncStatusIcons = ({ note }: { note: Note }) => {
       ) : (
         <Upload className="w-3 h-3 text-gray-400" title="Not published to relays" />
       )}
-      
+
       {/* Download status - fetched from relays */}
       {note.fetchedFromRelays ? (
         <Download className="w-3 h-3 text-blue-500" title="Fetched from relays" />
@@ -162,6 +162,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
   const [showIncentives, setShowIncentives] = useState(false)
   const [lastSavedWordCount, setLastSavedWordCount] = useState<number | null>(null)
   const [userStreak, setUserStreak] = useState(0)
+  const [previousStreak, setPreviousStreak] = useState(0)
   const [hasLightningGoals, setHasLightningGoals] = useState(false)
   const [userLightningAddress, setUserLightningAddress] = useState<string>('')
   const [showStreakAnimation, setShowStreakAnimation] = useState(false)
@@ -173,36 +174,36 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
   const clearSelectiveStorage = async () => {
     console.log("[NostrJournal] 🧹 Clearing selective storage for consistent cross-device experience...")
     console.log("[NostrJournal] 💡 Preserving remote signer sessions for fast reconnect")
-    
+
     // Clear only data that should be fetched fresh from Nostr relays
     // DO NOT clear remote signer sessions or authentication data
     const keysToRemove = [
       // Relay preferences (will be fetched from Nostr)
       'nostr_user_relays',
       'nostr-relays',
-      
+
       // Lightning addresses (will be fetched from Nostr events)
       ...Object.keys(localStorage).filter(key => key.startsWith('lightning-address-')),
-      
+
       // Payment hashes and invoice strings (temporary data)
       ...Object.keys(localStorage).filter(key => key.startsWith('payment-hash-')),
       ...Object.keys(localStorage).filter(key => key.startsWith('invoice-string-')),
-      
+
       // Progress data (will be fetched from Nostr events)
       ...Object.keys(localStorage).filter(key => key.startsWith('daily-progress-')),
       ...Object.keys(localStorage).filter(key => key.startsWith('incentive-settings-')),
-      
+
       // App-specific data keys (but preserve auth sessions)
-      ...Object.keys(localStorage).filter(key => 
-        (key.includes('journal') || 
-         key.includes('lightning') ||
-         key.includes('incentive')) &&
+      ...Object.keys(localStorage).filter(key =>
+        (key.includes('journal') ||
+          key.includes('lightning') ||
+          key.includes('incentive')) &&
         !key.includes('session') &&
         !key.includes('nostr_remote_session') &&
         !key.includes('nostr_session')
       )
     ]
-    
+
     keysToRemove.forEach(key => {
       try {
         localStorage.removeItem(key)
@@ -211,7 +212,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         console.warn(`[NostrJournal] ⚠️ Failed to remove localStorage key ${key}:`, error)
       }
     })
-    
+
     // Clear event cache but preserve auth sessions
     try {
       const { clearUserCache } = await import('@/lib/nostr-storage')
@@ -220,7 +221,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     } catch (error) {
       console.warn("[NostrJournal] ⚠️ Failed to clear event cache:", error)
     }
-    
+
     console.log("[NostrJournal] ✅ Selective storage cleared - preserved auth sessions for fast reconnect")
   }
 
@@ -230,20 +231,20 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
       console.log('[MainApp] 📊 No notes, word count = 0')
       return 0
     }
-    
+
     const total = notes.reduce((sum, note) => {
       if (!note.content) return sum
-      
+
       const words = note.content
         .trim()
         .split(/\s+/)
         .filter(word => word.length > 0)
         .length
-      
+
       console.log(`[MainApp] 📝 Note "${note.title}": ${words} words`)
       return sum + words
     }, 0)
-    
+
     console.log(`[MainApp] 📊 TOTAL WORD COUNT: ${total} (from ${notes.length} notes)`)
     return total
   }
@@ -258,7 +259,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
   const [displayName, setDisplayName] = useState<string>("")
   const [showDonationModal, setShowDonationModal] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  
+
   // Event management removed - using direct sync instead
 
   // Simplified sync operations using global sync manager
@@ -270,26 +271,26 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     try {
       // Retry is just loading from relays (same as sync)
       const relayNotes = await syncFromRelays(authData)
-      
+
       // Validate and sanitize the notes
       const validatedNotes = sanitizeNotes(relayNotes)
-      
+
       // Update state with latest notes from relays
       setNotes(validatedNotes)
       setSyncStatus("synced")
-        setLastSyncTime(new Date())
-      
+      setLastSyncTime(new Date())
+
       // LOCAL STORAGE DISABLED - Notes are only stored on Nostr relays
-      
+
       // Update tags
       const allTags = new Set<string>()
       validatedNotes.forEach((note) => {
         note.tags.forEach((tag) => allTags.add(tag))
       })
       setTags(Array.from(allTags))
-      
+
       // Retry complete
-      
+
     } catch (error) {
       console.error("[NostrJournal] Retry failed:", error)
       setSyncStatus("error")
@@ -299,17 +300,17 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
 
   const ensureRemoteSignerAvailable = async () => {
     console.log("[NostrJournal] 🔧 Checking if remote signer is available...")
-    
+
     try {
-        const { isRemoteSignerConnected } = await import('@/lib/ndk-signer-manager')
-        
-        if (isRemoteSignerConnected()) {
+      const { isRemoteSignerConnected } = await import('@/lib/ndk-signer-manager')
+
+      if (isRemoteSignerConnected()) {
         console.log("[NostrJournal] ✅ Remote signer is available")
         return true
       }
-      
+
       console.log("[NostrJournal] ⚠️ Remote signer not available, attempting to resume...")
-      
+
       const result = await unifiedSigner.resumeSession()
       if (result) {
         console.log("[NostrJournal] ✅ Remote signer session resumed successfully")
@@ -382,26 +383,26 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
   //     console.warn('[SyncQueue] Error setting up event handlers:', error);
   //   }
 
-    // PERMANENTLY DISABLED - Sync queue stats cause loading issues
-    // Even with delayed startup, they interfere with initialization
-    // return () => {
-    //   // No cleanup needed since we're not starting any intervals
-    // };
+  // PERMANENTLY DISABLED - Sync queue stats cause loading issues
+  // Even with delayed startup, they interfere with initialization
+  // return () => {
+  //   // No cleanup needed since we're not starting any intervals
+  // };
 
   const checkLightningGoals = async () => {
     try {
       const goals = await getLightningGoals(authData.pubkey)
-      
+
       if (goals && goals.status === 'active') {
         setHasLightningGoals(true)
         setUserStreak(goals.currentStreak)
-        
+
         // Set Lightning address from master event
         if (goals.lightningAddress) {
           console.log('[MainApp] ⚡ Setting Lightning address from master event:', goals.lightningAddress)
           setUserLightningAddress(goals.lightningAddress)
         }
-        
+
         console.log('[MainApp] ✅ Active goals found, Balance:', goals.currentBalance)
       } else {
         setHasLightningGoals(false)
@@ -421,24 +422,18 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
   // Update Lightning Goals with current word count and check for rewards
   const checkRewardEligibility = async (wordCount: number) => {
     if (!isIncentiveEnabled || !authData) return
-    
+
     // Rate limiting to prevent too frequent updates
     const now = Date.now()
     const timeSinceLastUpdate = now - lastLightningGoalsUpdate.current
-    console.log('[MainApp] 🔍 Rate limiting check:', { 
-      timeSinceLastUpdate, 
-      cooldown: LIGHTNING_GOALS_UPDATE_COOLDOWN,
-      isRateLimited: timeSinceLastUpdate < LIGHTNING_GOALS_UPDATE_COOLDOWN 
-    })
-    
+
     if (timeSinceLastUpdate < LIGHTNING_GOALS_UPDATE_COOLDOWN) {
-      console.log('[MainApp] ⏳ Lightning Goals update rate limited, skipping...')
       return
     }
     lastLightningGoalsUpdate.current = now
-    
+
     console.log('[MainApp] 🎯 Word count updated:', wordCount)
-    
+
     try {
       // Ensure remote signer is initialized if using remote auth
       if (authData.authMethod === 'remote') {
@@ -448,143 +443,58 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
           await unifiedSigner.resumeSession()
         }
       }
-      
+
       // Import Lightning Goals functions
-      const { getLightningGoals, updateLightningGoals } = await import('@/lib/lightning-goals')
-      
-      // Get current Lightning Goals data
-      const goals = await getLightningGoals(authData.pubkey)
-      console.log('[MainApp] 📊 Current Lightning Goals:', goals)
-      
-      if (!goals || goals.status !== 'active') {
-        console.log('[MainApp] ⚠️ No active Lightning Goals found')
-        return
-      }
-      
-      // Calculate newly written words since last update
-      const previousWordCount = goals.totalWordCountAtLastUpdate || goals.baselineWordCount || 0
-      const newlyWrittenWords = Math.max(0, wordCount - previousWordCount)
-      
-      console.log('[MainApp] 📊 Word calculation:', {
-        currentTotalWordCount: wordCount,
-        previousWordCount: previousWordCount,
-        newlyWrittenWords: newlyWrittenWords,
-        currentTodayWords: goals.todayWords || 0,
-        dailyWordGoal: goals.dailyWordGoal
-      })
-      
-      // Update Lightning Goals with incremental progress
-      const updatedGoals = {
-        ...goals,
-        todayWords: (goals.todayWords || 0) + newlyWrittenWords,
-        totalWordCountAtLastUpdate: wordCount,
-        lastUpdated: Date.now(),
-        todayDate: new Date().toISOString().split('T')[0]
-      }
-      
-      // Check if goal is met
-      console.log('[MainApp] 🔍 Goal check:', {
-        todayWords: updatedGoals.todayWords,
-        dailyWordGoal: goals.dailyWordGoal,
-        todayRewardSent: goals.todayRewardSent,
-        goalMet: updatedGoals.todayWords >= goals.dailyWordGoal,
-        rewardNotSent: !goals.todayRewardSent
-      })
-      
-      if (updatedGoals.todayWords >= goals.dailyWordGoal && !goals.todayRewardSent) {
+      const { updateWordCount, recordRewardSent } = await import('@/lib/lightning-goals')
+
+      // Update word count via immutable event
+      const { shouldSendReward, rewardAmount } = await updateWordCount(
+        authData.pubkey,
+        wordCount,
+        authData
+      )
+
+      if (shouldSendReward) {
         console.log('[MainApp] 🎉 Goal reached! Sending reward...')
-        
+
         // Send reward via API
         try {
-          const dateString = new Date().toLocaleDateString('en-US', { 
-            month: '2-digit', 
-            day: '2-digit', 
-            year: '2-digit' 
+          const dateString = new Date().toLocaleDateString('en-US', {
+            month: '2-digit',
+            day: '2-digit',
+            year: '2-digit'
           })
-          
+
           const response = await fetch('/api/incentive/send-reward', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               userPubkey: authData.pubkey,
-              amount: goals.dailyReward,
-              lightningAddress: goals.lightningAddress,
+              amount: rewardAmount,
               isRefund: false,
               memo: `Nostr Journal - ${dateString} Reward`
             })
           })
-          
+
           const result = await response.json()
-          console.log('[MainApp] 📡 Reward API response:', result)
-          
+          console.log('[MainApp] 📡 Reward API result:', result)
+
           if (result.success) {
             console.log('[MainApp] ✅ Reward sent successfully!')
-            
-            // ✅ STEP 1: Get CURRENT history from goals we just fetched
-            const existingHistory = goals.history || []
-            console.log('[MainApp] 📚 Existing history entries:', existingHistory.length)
-            
-            // ✅ STEP 2: Create new reward entry
-            const today = new Date().toISOString().split('T')[0]
-            const dateString = new Date().toLocaleDateString('en-US', { 
-              month: '2-digit', 
-              day: '2-digit', 
-              year: '2-digit' 
-            })
-            
-            const rewardEntry = {
-              date: today,
-              words: updatedGoals.todayWords,
-              goalMet: true,
-              rewardSent: true,
-              amount: goals.dailyReward,
-              transactions: [{
-                id: `reward-${Date.now()}`,
-                type: 'payout' as const,
-                amount: goals.dailyReward,
-                timestamp: Date.now(),
-                description: `Journal Reward - ${dateString}`,
-                txHash: result.paymentHash || 'unknown'
-              }]
-            }
-            
-            console.log('[MainApp] 📝 New reward entry:', rewardEntry)
-            
-            // ✅ STEP 3: Append to existing history
-            const updatedHistory = [...existingHistory, rewardEntry]
-            console.log('[MainApp] 📚 Updated history entries:', updatedHistory.length)
-            
-            // ✅ STEP 4: Update all goal data including accumulated history
-            updatedGoals.todayGoalMet = true
-            updatedGoals.todayRewardSent = true
-            updatedGoals.todayRewardAmount = goals.dailyReward
-            updatedGoals.totalGoalsMet = (goals.totalGoalsMet || 0) + 1
-            updatedGoals.totalRewardsEarned = (goals.totalRewardsEarned || 0) + goals.dailyReward
-            updatedGoals.currentStreak = (goals.currentStreak || 0) + 1
-            updatedGoals.lastRewardDate = today
-            updatedGoals.currentBalance = Math.max(0, goals.currentBalance - goals.dailyReward)
-            updatedGoals.history = updatedHistory  // ← Include accumulated history!
-            
-            console.log('[MainApp] 💾 Saving to Nostr with', updatedHistory.length, 'history entries')
-            console.log('[MainApp] 🎉 Goal completed and reward sent!')
+
+            // Record reward payout event
+            await recordRewardSent(authData.pubkey, rewardAmount, authData)
+
+            console.log('[MainApp] 💾 Reward payout recorded on Nostr')
           } else {
             console.error('[MainApp] ❌ Failed to send reward:', result.error)
           }
         } catch (rewardError) {
           console.error('[MainApp] ❌ Error sending reward:', rewardError)
         }
-      } else if (updatedGoals.todayWords >= goals.dailyWordGoal) {
-        console.log('[MainApp] ✅ Goal already met and reward sent today')
-        updatedGoals.todayGoalMet = true
-      } else {
-        console.log('[MainApp] ⏳ Goal not yet reached:', { todayWords: updatedGoals.todayWords, goal: goals.dailyWordGoal })
       }
-      
-      // Update the Lightning Goals event
-      await updateLightningGoals(authData.pubkey, updatedGoals, authData)
-      console.log('[MainApp] ✅ Lightning Goals updated successfully')
-      
-      } catch (error) {
+
+    } catch (error) {
       console.error('[MainApp] ❌ Error updating Lightning Goals:', error)
     }
   }
@@ -613,30 +523,30 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
   useEffect(() => {
     const loadUserNotes = async () => {
       console.log("[NostrJournal] Loading notes for user:", authData.pubkey)
-      
+
       // Clear selective storage on app startup for consistent cross-device experience
       // Preserves remote signer sessions for fast reconnect
       await clearSelectiveStorage()
-      
+
       setIsLoading(true)
       setSyncStatus("syncing")
 
       try {
         // ALWAYS check and set up remote signer if needed
         console.log("[NostrJournal] 🔧 Checking remote signer setup for auth method:", authData.authMethod)
-        
+
         // Auto-resume remote signer session if using remote auth
         if (authData.authMethod === 'remote') {
           console.log("[NostrJournal] 🔧 Attempting to auto-resume remote signer...")
-          
+
           try {
             const unifiedSigner = await import('@/lib/auth/unified-remote-signer')
             const { initializeSigner } = await import('@/lib/ndk-signer-manager')
-        const result = await initializeSigner(authData)
-            
+            const result = await initializeSigner(authData)
+
             if (result) {
               console.log("[NostrJournal] ✅ Remote signer auto-resumed successfully")
-              
+
               // Verify pubkey matches
               if (result.userPubkey !== authData.pubkey) {
                 console.warn("[NostrJournal] ⚠️ Pubkey mismatch after resume!")
@@ -662,18 +572,18 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
 
         // LOCAL STORAGE DISABLED - Only use remote data
         console.log("[NostrJournal] 🌐 Using only remote data - local storage disabled")
-        
+
         // Use only relay notes since local storage is disabled
         const allNotes = relayNotes.map(note => ({
-                ...note,
+          ...note,
           source: 'relay',
           fetchedFromRelays: true,
           publishedToRelays: true, // If fetched from relays, it was previously published
           isSynced: true // All notes fetched from relays are synced
         }))
-        
+
         console.log("[NostrJournal] Loaded", allNotes.length, "notes from Nostr relays only")
-        
+
         // Validate and sanitize all notes
         const validatedNotes = sanitizeNotes(allNotes)
         console.log("[NostrJournal] Validated notes:", validatedNotes.length)
@@ -690,13 +600,13 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
 
         setIsLoading(false)
         setSyncStatus("synced")
-              setLastSyncTime(new Date())
+        setLastSyncTime(new Date())
 
         console.log("[NostrJournal] ✅ Notes loaded successfully:", validatedNotes.length)
 
-          } catch (error) {
+      } catch (error) {
         console.error("[NostrJournal] Error loading notes:", error)
-            setSyncStatus("error")
+        setSyncStatus("error")
         setConnectionError(error instanceof Error ? error.message : "Failed to load notes")
         setIsLoading(false)
         // CRITICAL: Set empty array instead of leaving undefined
@@ -720,7 +630,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     } else {
       clearTimeout(loadTimeout)
     }
-    
+
     // Cleanup relay pool on unmount
     return () => {
       shutdownPersistentRelayPool()
@@ -837,7 +747,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
 
   const handleCreateNote = async () => {
     console.log("[NostrJournal] Creating new note...")
-    
+
     const now = new Date()
 
     const dateTitle = now.toLocaleDateString("en-US", {
@@ -866,7 +776,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     try {
       console.log("[NostrJournal] 📡 Attempting to save note as Kind 30001 list...")
       console.log("[NostrJournal] Auth method:", authData.authMethod)
-      
+
       // CRITICAL: Check if remote signer is active
       if (authData.authMethod === 'remote') {
         const unifiedSigner = await import('@/lib/auth/unified-remote-signer')
@@ -879,17 +789,17 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         console.log("[NostrJournal] ❌ Noauth method no longer supported")
         throw new Error("Noauth method has been removed. Please use Remote Signer instead.")
       }
-      
+
       const result = await saveJournalAsKind30001(newNote, authData)
       console.log("[NostrJournal] 📡 Save result:", result)
-      
+
       if (result.success && result.eventId) {
         console.log("[NostrJournal] ✅ Note saved successfully with eventId:", result.eventId)
-        
+
         // Update with eventId and sync status
-        const finalNote = { 
-          ...newNote, 
-          eventId: result.eventId, 
+        const finalNote = {
+          ...newNote,
+          eventId: result.eventId,
           lastSynced: new Date(),
           isSynced: true,
           publishedToRelays: true,
@@ -898,7 +808,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         const finalUpdatedNotes = [finalNote, ...notes.filter(n => n.id !== newNote.id)]
         setNotes(finalUpdatedNotes)
         setSelectedNote(finalNote)
-        
+
         console.log("[NostrJournal] ✅ Note creation complete!")
       } else {
         console.error("[NostrJournal] ❌ Failed to save note to relays:", result.error || "Unknown error")
@@ -936,7 +846,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     console.log("[NostrJournal] 🔍 Auth method:", authData.authMethod)
     console.log("[NostrJournal] 🔍 Auth method type:", typeof authData.authMethod)
     console.log("[NostrJournal] 🔍 Auth method === 'remote':", authData.authMethod === 'remote')
-    
+
     if (authData.authMethod === 'remote') {
       console.log("[NostrJournal] 🔧 Ensuring remote signer is available before saving...")
       await ensureRemoteSignerAvailable()
@@ -948,7 +858,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     try {
       console.log("[NostrJournal] 📡 Attempting to save updated note as Kind 30001 list...")
       console.log("[NostrJournal] Auth method:", authData.authMethod)
-      
+
       // CRITICAL: Check if remote signer is active
       if (authData.authMethod === 'remote') {
         const unifiedSigner = await import('@/lib/auth/unified-remote-signer')
@@ -961,17 +871,17 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         console.log("[NostrJournal] ❌ Noauth method no longer supported")
         throw new Error("Noauth method has been removed. Please use Remote Signer instead.")
       }
-      
+
       const result = await saveJournalAsKind30001(optimisticNote, authData)
       console.log("[NostrJournal] 📡 Update result:", result)
-      
+
       if (result.success && result.eventId) {
         console.log("[NostrJournal] ✅ Note updated successfully with eventId:", result.eventId)
-        
+
         // Update with eventId and sync status
-        const finalNote = { 
-          ...optimisticNote, 
-          eventId: result.eventId, 
+        const finalNote = {
+          ...optimisticNote,
+          eventId: result.eventId,
           lastSynced: new Date(),
           isSynced: true,
           publishedToRelays: true,
@@ -979,9 +889,9 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         }
         setNotes(prevNotes => prevNotes.map(n => n.id === updatedNote.id ? finalNote : n))
         setSelectedNote(finalNote)
-        
+
         console.log("[NostrJournal] ✅ Note update complete!")
-        
+
         // Check for Lightning Goals reward eligibility after successful save
         console.log("[NostrJournal] 🔥 REACHED Lightning Goals check section")
         console.log("[NostrJournal] 🔍 isIncentiveEnabled:", isIncentiveEnabled)
@@ -992,20 +902,20 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
             const updatedNotes = notes.map(n => n.id === updatedNote.id ? finalNote : n)
             const totalWordCount = calculateTotalWordCount(updatedNotes)
             console.log("[NostrJournal] 🔍 About to call checkRewardEligibility with wordCount:", totalWordCount)
-            
+
             console.log("[NostrJournal] 📊 Total word count after save:", totalWordCount)
-            
+
             // Always set word count (even if 0) so monitor knows about the update
             console.log("[NostrJournal] ⚡ Setting total word count:", totalWordCount)
             setLastSavedWordCount(totalWordCount)
-            
+
             // Trigger reward check if word count is provided
             if (totalWordCount > 0) {
               console.log("[NostrJournal] ⚡ Total word count > 0, triggering automatic reward check")
-              
+
               // Call the direct reward eligibility check
               await checkRewardEligibility(totalWordCount)
-      } else {
+            } else {
               console.log("[NostrJournal] ⚡ Total word count = 0, skipping reward check")
             }
           } catch (rewardError) {
@@ -1013,7 +923,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
             // Don't fail the note save if reward check fails
           }
         }
-        
+
       } else {
         console.error("[NostrJournal] ❌ Failed to save updated note to relays:", result.error || "Unknown error")
         alert(`Failed to update note: ${result.error || "Unknown error"}`)
@@ -1158,7 +1068,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
 
     setShowDeleteConfirmation(false)
     setNoteToDelete(null)
-    
+
     console.log("[NostrJournal] ✅ Note deleted")
   }
 
@@ -1172,7 +1082,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     } catch (error) {
       console.error("[NostrJournal] Failed to publish deletion event:", error)
     }
-    }
+  }
 
   const handleCancelDelete = () => {
     setShowDeleteConfirmation(false)
@@ -1182,7 +1092,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
   // Test publish function for debugging
   const testPublish = async () => {
     console.log("[Test] 🧪 Testing publish to Nostr...")
-    
+
     try {
       const testEvent = {
         kind: 1,
@@ -1207,18 +1117,18 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
       }
 
       console.log("[Test] 📝 Test event created:", signedEvent.id)
-      
+
       // Publish using our improved function
       const { publishToNostr } = await import("@/lib/nostr-publish")
       const eventId = await publishToNostr(testEvent, authData)
-      
+
       console.log("[Test] ✅ Test event published successfully!")
       console.log("[Test] 🆔 Event ID:", eventId)
       console.log("[Test] 🔗 View on nostr.band:", `https://nostr.band/e/${eventId}`)
-      
+
       // Open in new tab
       window.open(`https://nostr.band/e/${eventId}`, '_blank')
-      
+
     } catch (error) {
       console.error("[Test] ❌ Test publish failed:", error)
       setConnectionError("Test publish failed: " + (error instanceof Error ? error.message : "Unknown error"))
@@ -1246,14 +1156,14 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         : notes.filter((note) => note.tags.includes(selectedTag || ""))
 
   // Sort notes by lastModified date (most recent first)
-  const sortedNotes = filteredNotes.sort((a, b) => 
+  const sortedNotes = filteredNotes.sort((a, b) =>
     new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
   )
 
   const getSyncStatusText = () => {
     // PERMANENTLY DISABLED - Sync queue stats cause loading issues
     // const queueText = syncQueueStats.queueLength > 0 ? ` (${syncQueueStats.queueLength} queued)` : '';
-    
+
     switch (syncStatus) {
       case "synced":
         return lastSyncTime ? `Synced ${lastSyncTime.toLocaleTimeString()}` : `Synced`
@@ -1271,7 +1181,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     // if (syncQueueStats.processing || syncQueueStats.queueLength > 0) {
     //   return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
     // }
-    
+
     switch (syncStatus) {
       case "synced":
         return <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -1294,10 +1204,10 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
       // Clear selective storage first (same as initial login) to prevent stale data
       console.log("[NostrJournal] 🧹 Clearing selective storage before manual sync...")
       await clearSelectiveStorage()
-      
+
       // Sync is just loading from Kind 30001 lists (same as app startup)
       const relayNotes = await syncFromKind30001(authData)
-      
+
       // Mark all relay notes as fetched from relays
       const notesWithSyncStatus = relayNotes.map(note => ({
         ...note,
@@ -1306,13 +1216,13 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         isSynced: true, // All notes fetched from relays are synced
         eventId: note.eventId || note.id // Ensure eventId is set (use note.id as fallback)
       }))
-      
+
       // Validate and sanitize the notes
       const validatedNotes = sanitizeNotes(notesWithSyncStatus)
-      
+
       // Update state with latest notes from relays
       setNotes(validatedNotes)
-      
+
       // Update selected note if it exists in the refreshed notes
       if (selectedNote) {
         const updatedSelectedNote = validatedNotes.find(note => note.id === selectedNote.id)
@@ -1321,21 +1231,21 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
           console.log("[NostrJournal] Updated selected note with latest data from relays")
         }
       }
-      
+
       setSyncStatus("synced")
       setLastSyncTime(new Date())
-      
+
       // LOCAL STORAGE DISABLED - Notes are only stored on Nostr relays
-      
+
       // Update tags
       const allTags = new Set<string>()
       validatedNotes.forEach((note) => {
         note.tags.forEach((tag) => allTags.add(tag))
       })
       setTags(Array.from(allTags))
-      
+
       console.log(`[v0] ✅ Manual sync complete: ${validatedNotes.length} notes loaded from relays`)
-      
+
     } catch (error) {
       console.error("[NostrJournal] Manual sync failed:", error)
       setSyncStatus("error")
@@ -1346,16 +1256,16 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
   const handleManualRefresh = async () => {
     console.log("[NostrJournal] Manual refresh triggered")
     setIsRefreshing(true)
-    
+
     try {
       // Clear selective storage first (same as initial login) to prevent stale data
       console.log("[NostrJournal] 🧹 Clearing selective storage before manual refresh...")
       await clearSelectiveStorage()
-      
+
       // Use the same logic as page load - fetch from Kind 30001 lists
       const relayNotes = await loadJournalFromKind30001(authData)
       console.log("[NostrJournal] ✅ Refreshed", relayNotes.length, "journal entries from Kind 30001 lists")
-      
+
       // Update notes with fetched data (set both sync statuses to true and ensure event IDs are present)
       const updatedNotes = relayNotes.map(note => ({
         ...note,
@@ -1364,12 +1274,12 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         isSynced: true, // All notes fetched from relays are synced
         eventId: note.eventId || note.id // Ensure eventId is set (use note.id as fallback)
       }))
-      
+
       // Validate and sanitize the notes
       const validatedNotes = sanitizeNotes(updatedNotes)
-      
+
       setNotes(validatedNotes)
-      
+
       // Update selected note to point to the updated note object (triggers Editor re-render)
       if (selectedNote) {
         const updatedSelectedNote = validatedNotes.find(note => note.id === selectedNote.id)
@@ -1378,20 +1288,20 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
           console.log("[NostrJournal] Updated selected note with latest data from relays")
         }
       }
-      
+
       // Removed auto-selection - users should stay on their current note view
-      
+
       // LOCAL STORAGE DISABLED - Notes are only stored on Nostr relays
-      
+
       // Update tags
       const allTags = new Set<string>()
       validatedNotes.forEach((note) => {
         note.tags.forEach((tag) => allTags.add(tag))
       })
       setTags(Array.from(allTags))
-      
+
       console.log("[NostrJournal] ✅ Manual refresh complete")
-      
+
     } catch (error) {
       console.error("[NostrJournal] ❌ Manual refresh failed:", error)
     } finally {
@@ -1459,10 +1369,10 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
       try {
         const { SimplePool } = await import("nostr-tools/pool")
         const { getRelays } = await import("@/lib/relay-manager")
-        
+
         const RELAYS = await getRelays()
         const pool = new SimplePool()
-        
+
         const events = await pool.querySync(RELAYS, {
           kinds: [0],
           authors: [authData.pubkey],
@@ -1516,7 +1426,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
 
   return (
     <ErrorBoundary>
-    <div className="h-screen bg-background flex flex-col w-full">
+      <div className="h-screen bg-background flex flex-col w-full">
         {/* Clean Header */}
         <header className="sticky top-0 z-50 bg-white/95 dark:bg-card/95 backdrop-blur-sm border-b border-border">
           <div className="w-full px-4 py-3">
@@ -1524,14 +1434,14 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
               {/* Left side */}
               <div className="flex items-center gap-4">
                 {/* Mobile menu */}
-          <Button
-            variant="ghost"
-            size="sm"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="md:hidden"
                   onClick={() => setIsMobileSidebarOpen(true)}
-          >
-            <Menu className="w-4 h-4" />
-          </Button>
+                >
+                  <Menu className="w-4 h-4" />
+                </Button>
 
                 {/* Logo */}
                 <div className="flex items-center gap-3">
@@ -1543,7 +1453,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                   </div>
                 </div>
               </div>
-              
+
               {/* Right side */}
               <div className="flex items-center gap-1">
                 {/* Sync status - Desktop */}
@@ -1551,9 +1461,9 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                   <span className="text-muted-foreground">Events sync instantly</span>
                 </div>
-                
+
                 {/* Streak Counter - Desktop (only for users with Lightning Goals) */}
-                
+
                 {/* Manual refresh button - Desktop */}
                 <Button
                   variant="ghost"
@@ -1570,7 +1480,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                   )}
                   <span className="hidden lg:inline">Refresh</span>
                 </Button>
-                
+
                 {/* Sync status - Mobile (icon only) */}
                 <div className="md:hidden">
                   {isRefreshing ? (
@@ -1587,8 +1497,8 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                     </Button>
                   )}
                 </div>
-                
-                
+
+
                 {/* Dynamic Goals/Streak Button */}
                 {isIncentiveEnabled() && (
                   <Button
@@ -1599,8 +1509,8 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                       checkLightningGoals()
                       setShowIncentives(true)
                     }}
-                    className={hasLightningGoals 
-                      ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20" 
+                    className={hasLightningGoals
+                      ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
                       : "text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                     }
                     title={hasLightningGoals ? `${userStreak} day streak` : "Set up Lightning Goals"}
@@ -1608,11 +1518,20 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                     {hasLightningGoals ? (
                       <>
                         {/* Mobile: Circle with number */}
-                        <div className="sm:hidden flex items-center justify-center w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full">
-                          <span className="text-orange-600 dark:text-orange-400 font-bold text-sm">{userStreak}</span>
+                        <div className={`sm:hidden flex items-center justify-center w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full transition-all duration-300 ${showStreakAnimation ? 'animate-truefocus ring-2 ring-green-500 bg-green-100 dark:bg-green-900/30' : ''
+                          }`}>
+                          <span className={`font-bold text-sm ${showStreakAnimation ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'
+                            }`}>
+                            {userStreak}
+                          </span>
                         </div>
-                        {/* Desktop: Full text */}
-                        <span className="hidden sm:inline font-semibold">{userStreak} day streak</span>
+                        {/* Desktop: Full text with animation */}
+                        <span className={`hidden sm:inline font-semibold transition-all duration-300 ${showStreakAnimation
+                          ? 'animate-truefocus text-green-600'
+                          : ''
+                          }`}>
+                          {userStreak} day streak
+                        </span>
                       </>
                     ) : (
                       <>
@@ -1626,7 +1545,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                     )}
                   </Button>
                 )}
-                
+
                 {/* Theme toggle with system option */}
                 <DropdownMenu>
                   <DropdownMenuTrigger>
@@ -1655,21 +1574,21 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                
+
                 {/* Account dropdown - working version */}
                 <DropdownMenu>
                   <DropdownMenuTrigger>
-              <Button
-                variant="ghost"
-                size="sm"
-              >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                    >
                       <User className="w-4 h-4" />
                       <span className="hidden sm:inline ml-2">Account</span>
-              </Button>
+                    </Button>
                   </DropdownMenuTrigger>
-                  
-                  <DropdownMenuContent 
-                    align="end" 
+
+                  <DropdownMenuContent
+                    align="end"
                     className="w-96 z-[9999]"
                     sideOffset={8}
                   >
@@ -1678,9 +1597,9 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                       <div className="flex items-center gap-4 mb-4">
                         <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center overflow-hidden">
                           {profilePicture ? (
-                            <img 
-                              src={profilePicture} 
-                              alt="Profile" 
+                            <img
+                              src={profilePicture}
+                              alt="Profile"
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.currentTarget.style.display = 'none'
@@ -1700,18 +1619,18 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                             {displayName || "Nostr Profile"}
                           </p>
                           <p className="text-xs text-muted-foreground leading-tight">Connected</p>
-          </div>
-        </div>
+                        </div>
+                      </div>
 
                       <div>
                         <label className="text-xs text-muted-foreground mb-1 block">Public Key (npub)</label>
-        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2">
                           <code className="text-xs bg-muted px-3 py-2 rounded font-mono flex-1 truncate">
                             {npub || 'Loading...'}
                           </code>
-          <Button
-            variant="ghost"
-            size="sm"
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => {
                               if (npub) {
                                 navigator.clipboard.writeText(npub)
@@ -1722,11 +1641,11 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                             className="h-8 w-8 p-0"
                           >
                             {copiedNpub ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-          </Button>
+                          </Button>
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Lightning Address Section */}
                     <div className="px-4 py-3 border-t border-border">
                       <div className="space-y-2">
@@ -1746,19 +1665,19 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                               try {
                                 // Save to localStorage
                                 localStorage.setItem(`lightning-address-${authData.pubkey}`, userLightningAddress)
-                                
+
                                 // Update profile metadata
                                 const { SimplePool } = await import('nostr-tools')
                                 const pool = new SimplePool()
                                 const RELAYS = ['wss://relay.damus.io', 'wss://relay.snort.social', 'wss://nos.lol', 'wss://relay.nostr.band']
-                                
+
                                 // Get current profile
                                 const profileEvents = await pool.querySync(RELAYS, {
                                   kinds: [0],
                                   authors: [authData.pubkey],
                                   limit: 1
                                 })
-                                
+
                                 let profile = {}
                                 if (profileEvents.length > 0) {
                                   try {
@@ -1767,14 +1686,14 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                                     console.log('Error parsing profile:', e)
                                   }
                                 }
-                                
+
                                 // Update profile with Lightning address
                                 const updatedProfile = {
                                   ...profile,
                                   lud16: userLightningAddress,
                                   lightning_address: userLightningAddress
                                 }
-                                
+
                                 // Create new profile event
                                 const profileEvent = {
                                   kind: 0,
@@ -1783,13 +1702,13 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                                   content: JSON.stringify(updatedProfile),
                                   pubkey: authData.pubkey
                                 }
-                                
+
                                 // Sign and publish
                                 const signedEvent = await window.nostr.signEvent(profileEvent)
                                 await pool.publish(RELAYS, signedEvent)
-                                
+
                                 console.log('✅ Lightning address saved to profile:', userLightningAddress)
-                                
+
                                 // Update goals if exists
                                 try {
                                   const { updateLightningAddress } = await import('@/lib/lightning-goals')
@@ -1798,9 +1717,9 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                                 } catch (error) {
                                   console.log('ℹ️ No active goals to update Lightning address:', error.message)
                                 }
-                                
+
                                 alert('Lightning address saved successfully!')
-                                
+
                               } catch (error) {
                                 console.error('Error saving Lightning address:', error)
                                 alert('Error saving Lightning address: ' + error.message)
@@ -1816,9 +1735,9 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                         </p>
                       </div>
                     </div>
-                    
+
                     <DropdownMenuGroup>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
@@ -1835,7 +1754,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                         )}
                       </DropdownMenuItem>
                     </DropdownMenuGroup>
-                    
+
                     {/* Relays Submenu */}
                     {showRelaysInDropdown && (
                       <div className="px-4 py-3 border-t border-border bg-muted/30">
@@ -1858,8 +1777,8 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                                   }
                                 }}
                               />
-          <Button
-            size="sm"
+                              <Button
+                                size="sm"
                                 onClick={() => {
                                   if (newRelay && !relays.includes(newRelay)) {
                                     const updatedRelays = [...relays, newRelay]
@@ -1872,10 +1791,10 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                                 disabled={!newRelay || relays.includes(newRelay)}
                               >
                                 <Plus className="h-3 w-3" />
-          </Button>
+                              </Button>
                             </div>
                           </div>
-                          
+
                           <div>
                             <label className="text-xs text-muted-foreground mb-2 block">Active Relays ({relays.length})</label>
                             <div className="space-y-1 max-h-32 overflow-y-auto">
@@ -1883,9 +1802,9 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                                 relays.map((relay, index) => (
                                   <div key={index} className="flex items-center justify-between text-xs bg-background rounded px-2 py-1">
                                     <span className="font-mono truncate flex-1">{relay}</span>
-          <Button
-            variant="ghost"
-            size="sm"
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
                                       onClick={() => {
                                         const updatedRelays = relays.filter((_, i) => i !== index)
                                         setRelays(updatedRelays)
@@ -1894,22 +1813,22 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                                       className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                                     >
                                       <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
+                                    </Button>
+                                  </div>
                                 ))
                               ) : (
                                 <div className="text-xs text-muted-foreground text-center py-2">No relays configured</div>
                               )}
-      </div>
+                            </div>
                           </div>
                         </div>
                       </div>
                     )}
-                    
+
                     <DropdownMenuSeparator />
-                    
-                    
-                    <DropdownMenuItem 
+
+
+                    <DropdownMenuItem
                       onClick={() => {
                         console.log('[Dropdown] Support clicked')
                         setShowDonationModal(true)
@@ -1919,8 +1838,8 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                       <Zap className="w-4 h-4 mr-2" />
                       Support
                     </DropdownMenuItem>
-                    
-                    <DropdownMenuItem 
+
+                    <DropdownMenuItem
                       onClick={() => {
                         console.log('[Dropdown] Logout clicked')
                         handleLogout()
@@ -1932,108 +1851,108 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-        </div>
-      </div>
+              </div>
+            </div>
           </div>
         </header>
 
         <div className="flex flex-1 overflow-hidden">
           {/* Desktop Sidebar */}
-        <div className="hidden md:block">
-          <TagsPanel
-            tags={tags}
-            selectedTag={selectedTag}
-            onSelectTag={setSelectedTag}
-            pubkey={authData.pubkey}
-            onLogout={handleLogout}
-            onDonationClick={() => setShowDonationModal(true)}
-          />
-        </div>
+          <div className="hidden md:block">
+            <TagsPanel
+              tags={tags}
+              selectedTag={selectedTag}
+              onSelectTag={setSelectedTag}
+              pubkey={authData.pubkey}
+              onLogout={handleLogout}
+              onDonationClick={() => setShowDonationModal(true)}
+            />
+          </div>
 
           {/* Mobile Sidebar */}
-        {isMobileSidebarOpen && (
-          <div className="fixed inset-0 z-50 md:hidden">
-            <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsMobileSidebarOpen(false)} />
+          {isMobileSidebarOpen && (
+            <div className="fixed inset-0 z-50 md:hidden">
+              <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsMobileSidebarOpen(false)} />
               <div className="absolute left-0 top-0 h-full w-64 bg-card border-r border-border shadow-xl">
                 <div className="flex items-center justify-between p-4 border-b border-border">
                   <h2 className="text-foreground font-medium">Menu</h2>
-                <Button
-                  onClick={() => setIsMobileSidebarOpen(false)}
-                  variant="ghost"
-                  size="sm"
+                  <Button
+                    onClick={() => setIsMobileSidebarOpen(false)}
+                    variant="ghost"
+                    size="sm"
                     className="text-muted-foreground hover:text-foreground"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="flex flex-col h-full">
-                {/* Tags Panel */}
-                <div className="flex-shrink-0">
-              <TagsPanel
-                tags={tags}
-                selectedTag={selectedTag}
-                onSelectTag={(tag) => {
-                  setSelectedTag(tag)
-                  setIsMobileSidebarOpen(false)
-                }}
-                pubkey={authData.pubkey}
-                onLogout={handleLogout}
-                onDonationClick={() => {
-                  setShowDonationModal(true)
-                  setIsMobileSidebarOpen(false)
-                }}
-              />
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
                 </div>
-                
-                {/* Note List */}
-                <div className="flex-1 overflow-hidden">
-                  <NoteList
-                    notes={sortedNotes}
-                    selectedNote={selectedNote}
-                    onSelectNote={(note) => {
-                      setSelectedNote(note)
-                      setIsMobileSidebarOpen(false)
-                    }}
-                    onCreateNote={() => {
-                      handleCreateNote()
-                      setIsMobileSidebarOpen(false)
-                    }}
-                    onDeleteNote={handleDeleteNote}
-                    authData={authData}
-                  />
+                <div className="flex flex-col h-full">
+                  {/* Tags Panel */}
+                  <div className="flex-shrink-0">
+                    <TagsPanel
+                      tags={tags}
+                      selectedTag={selectedTag}
+                      onSelectTag={(tag) => {
+                        setSelectedTag(tag)
+                        setIsMobileSidebarOpen(false)
+                      }}
+                      pubkey={authData.pubkey}
+                      onLogout={handleLogout}
+                      onDonationClick={() => {
+                        setShowDonationModal(true)
+                        setIsMobileSidebarOpen(false)
+                      }}
+                    />
+                  </div>
+
+                  {/* Note List */}
+                  <div className="flex-1 overflow-hidden">
+                    <NoteList
+                      notes={sortedNotes}
+                      selectedNote={selectedNote}
+                      onSelectNote={(note) => {
+                        setSelectedNote(note)
+                        setIsMobileSidebarOpen(false)
+                      }}
+                      onCreateNote={() => {
+                        handleCreateNote()
+                        setIsMobileSidebarOpen(false)
+                      }}
+                      onDeleteNote={handleDeleteNote}
+                      authData={authData}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
           {/* Main content: Note List + Editor */}
           <div className="flex flex-1 min-w-0">
-          <div className="w-full md:w-80 border-r border-border">
-            <NoteList
-              notes={sortedNotes}
-              selectedNote={selectedNote}
-              onSelectNote={setSelectedNote}
-              onCreateNote={handleCreateNote}
-              onDeleteNote={handleDeleteNote}
+            <div className="w-full md:w-80 border-r border-border">
+              <NoteList
+                notes={sortedNotes}
+                selectedNote={selectedNote}
+                onSelectNote={setSelectedNote}
+                onCreateNote={handleCreateNote}
+                onDeleteNote={handleDeleteNote}
                 authData={authData}
-            />
-          </div>
+              />
+            </div>
 
             <div className="hidden lg:block flex-1">
-            <Editor
-              note={selectedNote}
-              onUpdateNote={handleUpdateNote}
-              onPublishNote={handlePublishNote}
-              onPublishHighlight={handlePublishHighlight}
-              onDeleteNote={handleDeleteNote}
+              <Editor
+                note={selectedNote}
+                onUpdateNote={handleUpdateNote}
+                onPublishNote={handlePublishNote}
+                onPublishHighlight={handlePublishHighlight}
+                onDeleteNote={handleDeleteNote}
                 authData={authData}
-            />
+              />
+            </div>
           </div>
-        </div>
 
           {/* Mobile Editor Overlay - MAXIMIZED FOR MOBILE */}
-        {selectedNote && (
+          {selectedNote && (
             <div className="fixed inset-0 z-40 lg:hidden bg-background mobile-editor-overlay" style={{ height: '100vh' }}>
               {/* Compact header - MINIMIZE THIS */}
               <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-card">
@@ -2062,9 +1981,9 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
               </div>
 
               {/* Editor container - MAXIMIZE THIS */}
-              <div 
+              <div
                 className="absolute inset-0 mobile-editor-content"
-                style={{ 
+                style={{
                   top: '42px',
                   bottom: 0,
                   left: 0,
@@ -2093,7 +2012,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                 </button>
               )}
             </div>
-        )}
+          )}
         </div>
 
         {showPublishConfirmation && noteToPublish && (
@@ -2112,8 +2031,8 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         )}
 
         {showProfile && (
-          <ProfilePage 
-            authData={authData} 
+          <ProfilePage
+            authData={authData}
             onClose={() => setShowProfile(false)}
             onLightningAddressUpdate={(address) => setUserLightningAddress(address)}
           />
@@ -2138,80 +2057,93 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
               <Button onClick={() => setShowDiagnostics(false)} variant="ghost" size="sm">
                 <X className="w-4 h-4" />
               </Button>
-      </div>
+            </div>
             <DiagnosticPage />
           </div>
         )}
 
-    </div>
-    
-    {/* Proper Lightning Donation Modal */}
-    <DonationModal
-      open={showDonationModal}
-      onOpenChange={setShowDonationModal}
-    />
-    
-    {/* Lightning Goals Monitor - Always Active */}
-    {(() => {
-      const shouldRender = isIncentiveEnabled() && authData
-      console.log('[MainApp] 🔍 Monitor render check:', {
-        incentiveEnabled: isIncentiveEnabled(),
-        hasAuthData: !!authData,
-        authPubkey: authData?.pubkey?.substring(0, 8) || 'NO_PUBKEY',
-        wordCount: lastSavedWordCount,
-        lightningAddress: userLightningAddress || 'NONE',
-        shouldRender
-      })
-      
-      if (shouldRender) {
-        console.log('[MainApp] ✅ RENDERING MONITOR')
-        return (
-          <LightningGoalsMonitor
-            userPubkey={authData.pubkey}
-            authData={authData}
-            currentWordCount={lastSavedWordCount || 0}
-            userLightningAddress={userLightningAddress}
-            onWordCountProcessed={() => setLastSavedWordCount(null)}
-          />
-        )
-      } else {
-        console.log('[MainApp] ❌ NOT RENDERING MONITOR')
-        return null
-      }
-    })()}
-    
-    {/* Debug Lightning address */}
-    {authData && (
-      <div style={{ display: 'none' }}>
-        Debug: Lightning address = {userLightningAddress || 'null'}
       </div>
-    )}
-    
-    {/* Lightning Incentive Modal */}
-    {isIncentiveEnabled() && (
-      <IncentiveModal
-        isOpen={showIncentives}
-        onClose={() => setShowIncentives(false)}
-        userPubkey={authData.pubkey}
-        authData={authData}
-        selectedNote={selectedNote}
-        lastSavedWordCount={lastSavedWordCount}
-        userLightningAddress={userLightningAddress}
-        onWordCountProcessed={() => setLastSavedWordCount(null)}
-        onSetupStatusChange={async (hasSetup) => {
-          // Update header when setup status changes
-          setHasLightningGoals(hasSetup)
-          if (!hasSetup) {
-            setUserStreak(0)
-          } else {
-            // Refresh Lightning Goals data when setup is active
-            await checkLightningGoals()
-          }
-        }}
-        onStakeActivated={checkLightningGoals}
+
+      {/* Proper Lightning Donation Modal */}
+      <DonationModal
+        open={showDonationModal}
+        onOpenChange={setShowDonationModal}
       />
-    )}
-    
+
+      {/* Lightning Goals Monitor - Always Active */}
+      {(() => {
+        const shouldRender = isIncentiveEnabled() && authData
+        console.log('[MainApp] 🔍 Monitor render check:', {
+          incentiveEnabled: isIncentiveEnabled(),
+          hasAuthData: !!authData,
+          authPubkey: authData?.pubkey?.substring(0, 8) || 'NO_PUBKEY',
+          wordCount: lastSavedWordCount,
+          lightningAddress: userLightningAddress || 'NONE',
+          shouldRender
+        })
+
+        if (shouldRender) {
+          console.log('[MainApp] ✅ RENDERING MONITOR')
+          return (
+            <LightningGoalsMonitor
+              userPubkey={authData.pubkey}
+              authData={authData}
+              currentWordCount={lastSavedWordCount || 0}
+              userLightningAddress={userLightningAddress}
+              onWordCountProcessed={() => setLastSavedWordCount(null)}
+              onGoalCompleted={() => {
+                console.log('[MainApp] ⚡ Goal completed from monitor!')
+              }}
+            />
+          )
+        } else {
+          console.log('[MainApp] ❌ NOT RENDERING MONITOR')
+          return null
+        }
+      })()}
+
+      {/* Debug Lightning address */}
+      {authData && (
+        <div style={{ display: 'none' }}>
+          Debug: Lightning address = {userLightningAddress || 'null'}
+        </div>
+      )}
+
+      {/* Lightning Incentive Modal */}
+      {isIncentiveEnabled() && (
+        <IncentiveModal
+          isOpen={showIncentives}
+          onClose={() => setShowIncentives(false)}
+          userPubkey={authData.pubkey}
+          authData={authData}
+          selectedNote={selectedNote}
+          lastSavedWordCount={lastSavedWordCount}
+          userLightningAddress={userLightningAddress}
+          onWordCountProcessed={() => setLastSavedWordCount(null)}
+          onSetupStatusChange={async (hasSetup) => {
+            // Update header when setup status changes
+            setHasLightningGoals(hasSetup)
+            if (!hasSetup) {
+              setUserStreak(0)
+              setPreviousStreak(0)
+            } else {
+              // Refresh Lightning Goals data when setup is active
+              await checkLightningGoals()
+            }
+          }}
+          onStakeActivated={checkLightningGoals}
+          onStreakUpdate={(newStreak: number) => {
+            console.log('[MainApp] 🎉 Streak updated from modal:', newStreak)
+            setShowStreakAnimation(true)
+            setPreviousStreak(userStreak)
+            setUserStreak(newStreak)
+            setTimeout(() => setShowStreakAnimation(false), 3000)
+          }}
+          onGoalCompleted={() => {
+            console.log('[MainApp] ⚡ Goal completed!')
+          }}
+        />
+      )}
     </ErrorBoundary>
   )
 }
