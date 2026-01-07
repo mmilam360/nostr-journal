@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+export const runtime = 'edge'
 import { NostrWebLNProvider } from '@getalby/sdk'
 
 const log = (msg: string, data?: any) => console.log(`[VerifyPayment] ${msg}`, data || '')
@@ -73,7 +74,7 @@ export async function POST(request: NextRequest) {
       // CRITICAL: Check if lookup_invoice method is available
       if (walletInfo.methods && Array.isArray(walletInfo.methods)) {
         const hasLookupInvoice = walletInfo.methods.includes('lookup_invoice') ||
-                                 walletInfo.methods.includes('lookupInvoice')
+          walletInfo.methods.includes('lookupInvoice')
 
         if (!hasLookupInvoice) {
           log('❌ lookup_invoice method NOT available!')
@@ -199,8 +200,8 @@ export async function POST(request: NextRequest) {
 
     // Extract amount from various possible fields
     const amount = invoiceStatus.amount ||
-                   invoiceStatus.value ||
-                   (invoiceStatus.amt_msat ? Math.floor(invoiceStatus.amt_msat / 1000) : null)
+      invoiceStatus.value ||
+      (invoiceStatus.amt_msat ? Math.floor(invoiceStatus.amt_msat / 1000) : null)
 
     log('========================================')
     log('🔍 PAYMENT VERIFICATION RESULT')
