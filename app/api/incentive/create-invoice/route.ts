@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-export const runtime = 'edge'
+// export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 // Test GET handler to verify route is working
 export async function GET(request: NextRequest) {
