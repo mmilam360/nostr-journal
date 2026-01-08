@@ -10,60 +10,84 @@ export async function GET(request: NextRequest) {
   })
 }
 
-export async function POST(request: NextRequest) {
-  console.log('[API] create-invoice POST request received')
-  console.log('[API] Request URL:', request.url)
-  console.log('[API] Request method:', request.method)
-  console.log('[API] Request headers:', Object.fromEntries(request.headers.entries()))
+import { NextRequest, NextResponse } from 'next/server'
+export const runtime = 'edge'
+import { NostrWebLNProvider } from '@getalby/sdk'
 
+const log = (msg: string, data?: any) => console.log(`[CreateInvoice] ${msg}`, data || '')
+
+export async function POST(request: NextRequest) {
   try {
+    log('========================================')
+    log('📥 CREATE INVOICE REQUEST')
+    log('========================================')
+
     const body = await request.json()
-    console.log('[API] Request body:', body)
+    log('📝 Request body:', body)
     const { amount, description } = body
 
     if (!amount || amount <= 0) {
+      log('❌ Invalid amount')
       return NextResponse.json({
         success: false,
         error: 'Invalid amount'
       }, { status: 400 })
     }
 
-    console.log('[API] Creating invoice for:', amount, 'sats')
+    // Get NWC connection URL from environment
+    const NWC_CONNECTION_URL = process.env.NWC_CONNECTION_URL
 
-    // For now, create a mock invoice
-    // In production, this would integrate with a Lightning node
-    const mockInvoice = `lnbc${amount}u1p${Math.random().toString(36).substring(2)}...`
-    const mockPaymentHash = Math.random().toString(36).substring(2, 34)
-
-    // Store the invoice data (in production, use a database)
-    // For now, we'll use a simple in-memory store
-    // Note: In serverless environments, this won't persist between requests
-    if (typeof global !== 'undefined') {
-      global.invoices = global.invoices || {}
-      global.invoices[mockPaymentHash] = {
-        amount,
-        description,
-        invoice: mockInvoice,
-        paymentHash: mockPaymentHash,
-        paid: false,
-        createdAt: Date.now()
-      }
+    if (!NWC_CONNECTION_URL) {
+      log('❌ NWC_CONNECTION_URL not configured!')
+      throw new Error('Server not configured: NWC_CONNECTION_URL missing')
     }
 
-    console.log('[API] ✅ Invoice created:', mockPaymentHash)
+    // Connect to NWC
+    log('🔌 Creating NWC connection...')
+    const nwc = new NostrWebLNProvider({
+      nostrWalletConnectUrl: NWC_CONNECTION_URL
+    })
+
+    log('🔌 Enabling NWC...')
+    await nwc.enable()
+    log('✅ NWC connected')
+
+    log('📝 Creating invoice via NWC...')
+    const invoice = await nwc.makeInvoice({
+      amount: amount,
+      memo: description || 'Nostr Journal Payment'
+    })
+
+    log('✅ Invoice created via NWC')
+
+    // Extract payment hash
+    let paymentHash = invoice.paymentHash || invoice.payment_hash || invoice.rHash || invoice.r_hash
+
+    if (!paymentHash && invoice.invoice) {
+      paymentHash = invoice.invoice.paymentHash || invoice.invoice.payment_hash
+    }
+
+    if (!paymentHash) {
+      log('⚠️ No payment hash found in NWC response')
+      paymentHash = `fallback-${Date.now()}`
+    }
 
     return NextResponse.json({
       success: true,
-      invoice: mockInvoice,
-      paymentHash: mockPaymentHash,
+      invoice: invoice.paymentRequest,
+      paymentHash: paymentHash,
       amount
+    }, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+      }
     })
 
-  } catch (error) {
-    console.error('[API] Error creating invoice:', error)
+  } catch (error: any) {
+    console.error('[CreateInvoice] ❌ Error:', error)
     return NextResponse.json({
       success: false,
-      error: 'Failed to create invoice'
+      error: error.message || 'Failed to create invoice'
     }, { status: 500 })
   }
 }
