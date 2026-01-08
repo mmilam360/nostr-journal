@@ -1,9 +1,4 @@
-// export const runtime = 'edge'
-export const runtime = 'nodejs'
-// Set max duration to 60 seconds (Pro) or 10 seconds (Hobby default, but explicit is good)
-export const maxDuration = 60
-// Prevent static generation
-export const dynamic = 'force-dynamic'
+export const runtime = 'edge'
 
 // Test GET handler to verify route is working
 export async function GET(request: NextRequest) {
