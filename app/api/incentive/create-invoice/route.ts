@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-export const runtime = 'edge'
+// export const runtime = 'edge' // Switch to Node.js runtime for @getalby/sdk compatibility
+export const runtime = 'nodejs'
 
 // Test GET handler to verify route is working
 export async function GET(request: NextRequest) {
   console.log('[API] create-invoice GET request received')
+  const hasEnv = !!process.env.NWC_CONNECTION_URL
+  const envLength = process.env.NWC_CONNECTION_URL?.length || 0
   return NextResponse.json({
     success: true,
-    message: 'API route is working'
+    message: 'API route is working',
+    hasNWC: hasEnv,
+    nwcLength: envLength,
+    runtime: 'nodejs'
   })
 }
 
@@ -38,7 +44,10 @@ export async function POST(request: NextRequest) {
 
     if (!NWC_CONNECTION_URL) {
       log('❌ NWC_CONNECTION_URL not configured!')
+      console.error('Environment variables available:', Object.keys(process.env))
       throw new Error('Server not configured: NWC_CONNECTION_URL missing')
+    } else {
+      log('✅ NWC_CONNECTION_URL found (length: ' + NWC_CONNECTION_URL.length + ')')
     }
 
     // Connect to NWC
@@ -84,9 +93,15 @@ export async function POST(request: NextRequest) {
 
   } catch (error: any) {
     console.error('[CreateInvoice] ❌ Error:', error)
+    console.error('[CreateInvoice] ❌ Stack:', error.stack)
+    console.error('[CreateInvoice] ❌ Message:', error.message)
+    console.error('[CreateInvoice] ❌ Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)))
+
     return NextResponse.json({
       success: false,
-      error: error.message || 'Failed to create invoice'
+      error: error.message || 'Failed to create invoice',
+      details: error.toString(),
+      stack: error.stack
     }, { status: 500 })
   }
 }
