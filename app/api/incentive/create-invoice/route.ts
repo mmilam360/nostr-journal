@@ -1,5 +1,9 @@
 // export const runtime = 'edge'
 export const runtime = 'nodejs'
+// Set max duration to 60 seconds (Pro) or 10 seconds (Hobby default, but explicit is good)
+export const maxDuration = 60
+// Prevent static generation
+export const dynamic = 'force-dynamic'
 
 // Test GET handler to verify route is working
 export async function GET(request: NextRequest) {
@@ -56,7 +60,18 @@ export async function POST(request: NextRequest) {
     })
 
     log('🔌 Enabling NWC...')
-    await nwc.enable()
+
+    // Create a timeout promise
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('NWC connection timed out after 8 seconds')), 8000)
+    )
+
+    // Race connection against timeout
+    await Promise.race([
+      nwc.enable(),
+      timeout
+    ])
+
     log('✅ NWC connected')
 
     log('📝 Creating invoice via NWC...')
