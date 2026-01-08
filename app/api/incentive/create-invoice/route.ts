@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-// export const runtime = 'edge' // Switch to Node.js runtime for @getalby/sdk compatibility
-export const runtime = 'nodejs'
+export const runtime = 'edge'
 
 // Test GET handler to verify route is working
 export async function GET(request: NextRequest) {
