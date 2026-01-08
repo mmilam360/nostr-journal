@@ -10,8 +10,7 @@ export async function GET(request: NextRequest) {
   })
 }
 
-import { NextRequest, NextResponse } from 'next/server'
-export const runtime = 'edge'
+
 import { NostrWebLNProvider } from '@getalby/sdk'
 
 const log = (msg: string, data?: any) => console.log(`[CreateInvoice] ${msg}`, data || '')
