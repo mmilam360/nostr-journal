@@ -110,7 +110,12 @@ export async function POST(request: NextRequest) {
       success: false,
       error: error.message || 'Failed to create invoice',
       details: error.toString(),
-      stack: error.stack
+      stack: error.stack,
+      envCheck: {
+        hasNWC: !!process.env.NWC_CONNECTION_URL,
+        envLength: process.env.NWC_CONNECTION_URL?.length || 0,
+        runtime: 'edge' // Hardcoded to confirm this file version is live
+      }
     }, { status: 500 })
   }
 }
