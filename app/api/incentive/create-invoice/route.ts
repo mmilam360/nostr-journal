@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 }
 
 
-import { NostrWebLNProvider } from '@getalby/sdk'
+// import { NostrWebLNProvider } from '@getalby/sdk'
 
 const log = (msg: string, data?: any) => console.log(`[CreateInvoice] ${msg}`, data || '')
 
@@ -50,6 +50,9 @@ export async function POST(request: NextRequest) {
 
     // Connect to NWC
     log('🔌 Creating NWC connection...')
+    // Dynamic import to prevent Edge startup crashes if SDK initializes globally
+    const { NostrWebLNProvider } = await import('@getalby/sdk')
+
     const nwc = new NostrWebLNProvider({
       nostrWalletConnectUrl: NWC_CONNECTION_URL
     })
