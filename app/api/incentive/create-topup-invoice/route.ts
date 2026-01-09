@@ -1,5 +1,5 @@
 export const runtime = 'edge'
-import { NostrWebLNProvider } from '@getalby/sdk'
+// import { NostrWebLNProvider } from '@getalby/sdk'
 
 const log = (msg: string, data?: any) => console.log(`[CreateTopUpInvoice] ${msg}`, data || '')
 
@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Connect to NWC
     log('🔌 Creating NWC connection...')
+    const { NostrWebLNProvider } = await import('@getalby/sdk')
 
     const nwc = new NostrWebLNProvider({
       nostrWalletConnectUrl: NWC_CONNECTION_URL
