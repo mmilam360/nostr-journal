@@ -9,40 +9,46 @@ export async function POST(request: NextRequest) {
     log('========================================')
     log('📥 VERIFY PAYMENT REQUEST (MOCK MODE)')
     log('========================================')
-
     const body = await request.json()
     const { paymentHash, invoiceString } = body
 
-    log('🔍 Payment hash:', paymentHash)
+    // Connect to NWC using lightweight client
+    const { NWCClient } = await import('@/lib/nwc')
+    const nwc = new NWCClient(process.env.NWC_CONNECTION_URL!)
 
-    // MOCK LOGIN INSTEAD OF NWC LOOKUP
-    // Verify if this matches our mock data pattern (or any request for now)
-    const isMock = true
+    // Look up invoice via NWC
+    log('🔍 Looking up invoice via NWC...')
 
-    if (isMock) {
-      log('✅ Detected Mock Payment Hash - Auto-Confirming')
+    // NWC lookup_invoice({ payment_hash: ... })
+    // Returns { settled: true/false, amount: msats, ... }
+    const invoiceStatus = await nwc.lookupInvoice(paymentHash)
+
+    log('✅ Invoice lookup successful!', invoiceStatus)
+
+    const isPaid = invoiceStatus.settled || invoiceStatus.status === 'paid' || invoiceStatus.paid === true
+    const amountSats = invoiceStatus.amount ? Math.floor(invoiceStatus.amount / 1000) : 0
+
+    if (isPaid) {
       return NextResponse.json({
         success: true,
         paid: true,
-        amount: 1000, // Mock amount
-        settledAt: Date.now() / 1000,
+        amount: amountSats,
+        settledAt: invoiceStatus.settled_at || Date.now() / 1000,
         state: 'SETTLED',
-        lookupMethod: 'mock_confirmation'
+        lookupMethod: 'nwc_light'
+      }, {
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+      })
+    } else {
+      return NextResponse.json({
+        success: true,
+        paid: false,
+        state: 'PENDING',
+        lookupMethod: 'nwc_light'
       }, {
         headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
       })
     }
-
-    // Default mock response
-    return NextResponse.json({
-      success: true,
-      paid: false,
-      message: "SDK Disabled - Mock Mode",
-      state: 'pending'
-    }, {
-      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
-    })
-
   } catch (error: any) {
     console.error('[VerifyPayment] ❌ Error:', error)
     return NextResponse.json({

@@ -7,7 +7,7 @@ const log = (msg: string, data?: any) => console.log(`[CreateDepositInvoice] ${m
 export async function POST(request: NextRequest) {
   try {
     log('========================================')
-    log('📥 CREATE DEPOSIT INVOICE REQUEST (MOCK MODE)')
+    log('📥 CREATE DEPOSIT INVOICE REQUEST')
     log('========================================')
 
     const body = await request.json()
@@ -15,34 +15,30 @@ export async function POST(request: NextRequest) {
 
     // Connect to NWC
     log('🔌 Creating NWC connection...')
-    // const { NostrWebLNProvider } = await import('@getalby/sdk')
+    const { NWCClient } = await import('@/lib/nwc') // Dynamic import to be safe
 
-    // const nwc = new NostrWebLNProvider({
-    //   nostrWalletConnectUrl: NWC_CONNECTION_URL
-    // })
+    const nwc = new NWCClient(process.env.NWC_CONNECTION_URL!)
 
-    log('🔌 Enabling NWC...')
-    // await nwc.enable()
-    log('✅ NWC connected successfully')
-
-    // Create invoice via NWC
     log('📝 Creating deposit invoice via NWC...')
-    // const invoice = await nwc.makeInvoice({
-    //   amount: amountSats,
-    //   memo: `Nostr Journal Stake Deposit - ${userPubkey.substring(0, 8)}`
-    // })
-    // Mock for now
-    const invoice = {
-      paymentRequest: "lnbc1mock" + Date.now(),
-      paymentHash: "mockhash" + Date.now()
+    const invoice = await nwc.makeInvoice(
+      amountSats,
+      `Nostr Journal Stake Deposit - ${userPubkey.substring(0, 8)}`
+    )
+
+    // Map NWC response to our format
+    const responseInvoice = {
+      paymentRequest: invoice.payment_request,
+      paymentHash: invoice.payment_hash
     }
+
+    log('✅ Invoice created via NWC (Real)', responseInvoice)
 
     // Mock successful response to test UI flow and routing
     // This proves if the crash is caused by SDK loading
     return NextResponse.json({
       success: true,
-      invoice: invoice.paymentRequest,
-      paymentHash: invoice.paymentHash,
+      invoice: responseInvoice.paymentRequest,
+      paymentHash: responseInvoice.paymentHash,
       amount: amountSats,
       note: "MOCK MODE - SDK Crash Debugging"
     }, {
