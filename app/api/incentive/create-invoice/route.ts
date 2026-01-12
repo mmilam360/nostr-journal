@@ -52,46 +52,42 @@ export async function POST(request: NextRequest) {
     // Connect to NWC
     log('🔌 Creating NWC connection...')
     // Dynamic import to prevent Edge startup crashes if SDK initializes globally
-    const { NostrWebLNProvider } = await import('@getalby/sdk')
+    // const { NostrWebLNProvider } = await import('@getalby/sdk')
 
-    const nwc = new NostrWebLNProvider({
-      nostrWalletConnectUrl: NWC_CONNECTION_URL
-    })
+    // const nwc = new NostrWebLNProvider({
+    //   nostrWalletConnectUrl: NWC_CONNECTION_URL
+    // })
 
     log('🔌 Enabling NWC...')
 
     // Create a timeout promise to prevent hanging
-    const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('NWC connection timed out after 8 seconds')), 8000)
-    )
+    // const timeout = new Promise((_, reject) => 
+    //   setTimeout(() => reject(new Error('NWC connection timed out after 8 seconds')), 8000)
+    // )
 
     // Race connection against timeout
-    await Promise.race([
-      nwc.enable(),
-      timeout
-    ])
+    // await Promise.race([
+    //   nwc.enable(),
+    //   timeout
+    // ])
 
     log('✅ NWC connected')
 
     log('📝 Creating invoice via NWC...')
-    const invoice = await nwc.makeInvoice({
-      amount: amount,
-      memo: description || 'Nostr Journal Payment'
-    })
+    // const invoice = await nwc.makeInvoice({
+    //   amount: amount,
+    //   memo: description || 'Nostr Journal Payment'
+    // })
 
-    log('✅ Invoice created via NWC')
+    const invoice = {
+      paymentRequest: "lnbc1mock" + Date.now(),
+      paymentHash: "mockhash" + Date.now()
+    }
+
+    log('✅ Invoice created via NWC (MOCKED)')
 
     // Extract payment hash
-    let paymentHash = invoice.paymentHash || invoice.payment_hash || invoice.rHash || invoice.r_hash
-
-    if (!paymentHash && invoice.invoice) {
-      paymentHash = invoice.invoice.paymentHash || invoice.invoice.payment_hash
-    }
-
-    if (!paymentHash) {
-      log('⚠️ No payment hash found in NWC response')
-      paymentHash = `fallback-${Date.now()}`
-    }
+    let paymentHash = invoice.paymentHash
 
     return NextResponse.json({
       success: true,

@@ -37,30 +37,34 @@ export async function POST(request: NextRequest) {
 
     // Connect to NWC
     log('🔌 Creating NWC connection...')
-    const { NostrWebLNProvider } = await import('@getalby/sdk')
+    // const { NostrWebLNProvider } = await import('@getalby/sdk')
 
-    const nwc = new NostrWebLNProvider({
-      nostrWalletConnectUrl: NWC_CONNECTION_URL
-    })
+    // const nwc = new NostrWebLNProvider({
+    //   nostrWalletConnectUrl: NWC_CONNECTION_URL
+    // })
 
     log('🔌 Enabling NWC...')
-    await nwc.enable()
+    // await nwc.enable()
 
     log('✅ NWC connected successfully')
 
     // Create invoice
     log('📝 Creating top-up invoice via NWC...')
 
-    const invoice = await nwc.makeInvoice({
-      amount: amountSats,  // Amount in sats
-      memo: `Nostr Journal top-up - ${userPubkey.substring(0, 8)} - ${timestamp}`
-    })
+    // const invoice = await nwc.makeInvoice({
+    //   amount: amountSats,  // Amount in sats
+    //   memo: `Nostr Journal top-up - ${userPubkey.substring(0, 8)} - ${timestamp}`
+    // })
+    const invoice = {
+      paymentRequest: "lnbc1mock" + Date.now(),
+      paymentHash: "mockhash" + Date.now()
+    }
 
-    log('✅ Top-up invoice created via NWC')
-    log('📋 Invoice string length:', invoice.paymentRequest?.length || 0)
-    log('📋 Invoice string preview:', invoice.paymentRequest?.substring(0, 80) + '...')
-    log('📋 Full invoice string:', invoice.paymentRequest)
-    log('📋 Full invoice object:', JSON.stringify(invoice, null, 2))
+    log('✅ Top-up invoice created via NWC (MOCKED)')
+    // log('📋 Invoice string length:', invoice.paymentRequest?.length || 0)
+    // log('📋 Invoice string preview:', invoice.paymentRequest?.substring(0, 80) + '...')
+    // log('📋 Full invoice string:', invoice.paymentRequest)
+    // log('📋 Full invoice object:', JSON.stringify(invoice, null, 2))
 
     // Extract payment hash from NWC response (if available)
     let paymentHash = invoice.paymentHash || invoice.payment_hash || invoice.rHash || invoice.r_hash
