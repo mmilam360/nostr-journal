@@ -13,45 +13,26 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { userPubkey, amountSats } = body
 
-    // Connect to NWC
-    log('🔌 Creating NWC connection...')
-    const { NWCClient } = await import('@/lib/nwc') // Dynamic import to be safe
+    // Zero-Dependency Mock Mode
+    log('⚠️ Using Zero-Dependency Simulation Mode')
 
-    const nwc = new NWCClient(process.env.NWC_CONNECTION_URL!)
+    // Generate a simulated invoice (just a random string, not a real BOLT11)
+    // In a real scenario without SDK, we would fetch from a standalone LNURL service or similar.
+    const mockInvoice = "lnbc" + Date.now() + "1mockinvoice" + userPubkey.substring(0, 6)
+    const mockHash = "mock_hash_" + Date.now()
 
-    log('📝 Creating deposit invoice via NWC...')
-    const invoice = await nwc.makeInvoice(
-      amountSats,
-      `Nostr Journal Stake Deposit - ${userPubkey.substring(0, 8)}`
-    )
-
-    // Map NWC response to our format
-    const responseInvoice = {
-      paymentRequest: invoice.payment_request,
-      paymentHash: invoice.payment_hash
-    }
-
-    log('✅ Invoice created via NWC (Real)', responseInvoice)
-
-    // Mock successful response to test UI flow and routing
-    // This proves if the crash is caused by SDK loading
     return NextResponse.json({
       success: true,
-      invoice: responseInvoice.paymentRequest,
-      paymentHash: responseInvoice.paymentHash,
+      invoice: mockInvoice,
+      paymentHash: mockHash,
       amount: amountSats,
-      note: "MOCK MODE - SDK Crash Debugging"
+      message: "Simulation Mode - Invoice Created"
     }, {
       headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
       }
     })
-
-  } catch (error: any) {
-    console.error('[CreateDepositInvoice] ❌ Error:', error)
-    return NextResponse.json({
-      success: false,
-      error: error.message
-    }, { status: 500 })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
