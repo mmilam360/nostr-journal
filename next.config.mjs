@@ -3,11 +3,11 @@ const nextConfig = {
   // output: 'export', // Disabled - deploying as regular Next.js app for API routes
   webpack: (config, { isServer }) => {
     if (isServer) {
-      config.externals = config.externals || [];
-      config.externals.push({
-        'nostr-tools': 'commonjs nostr-tools',
-        '@nostr-dev-kit/ndk': 'commonjs @nostr-dev-kit/ndk'
-      });
+      // config.externals = config.externals || [];
+      // config.externals.push({
+      //   'nostr-tools': 'commonjs nostr-tools',
+      //   '@nostr-dev-kit/ndk': 'commonjs @nostr-dev-kit/ndk'
+      // });
     }
 
     config.resolve.fallback = {
