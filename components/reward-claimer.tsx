@@ -47,14 +47,14 @@ export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
     setClaiming(true)
     try {
       // Call backend to send reward
-      const userNwcString = localStorage.getItem(`nwc-string-${userPubkey}`)
-      if (!userNwcString) {
-        throw new Error('Missing NWC connection string for user')
-      }
-
       const dailyReward = parseInt(
         settings.tags.find((t: string[]) => t[0] === 'daily_reward_sats')[1]
       )
+      const lightningAddress = settings.tags.find((t: string[]) => t[0] === 'lightning_address')?.[1]
+
+      if (!lightningAddress) {
+        throw new Error('Missing Lightning address for user')
+      }
 
       const response = await fetch('/api/incentive/send-reward', {
         method: 'POST',
@@ -62,7 +62,7 @@ export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
         body: JSON.stringify({
           userPubkey,
           date: new Date().toISOString().split('T')[0],
-          userNwcString,
+          lightningAddress,
           dailyRewardSats: dailyReward
         })
       })

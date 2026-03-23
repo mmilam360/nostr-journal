@@ -59,7 +59,6 @@ function BitcoinConnectLightningGoalsManagerInner({
   const [stakeAmount, setStakeAmount] = useState(100)
   const [dailyReward, setDailyReward] = useState(100)
   const [lightningAddress, setLightningAddress] = useState('')
-  const [userNwcString, setUserNwcString] = useState('')
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
   const [loading, setLoading] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState<'connect' | 'invoice' | null>(null)
@@ -199,15 +198,6 @@ function BitcoinConnectLightningGoalsManagerInner({
     
     loadUserProfile()
   }, [isConnected, userPubkey])
-
-  // Load saved NWC string from localStorage
-  useEffect(() => {
-    const savedNwc = localStorage.getItem(`nwc-string-${userPubkey}`)
-    if (savedNwc) {
-      setUserNwcString(savedNwc)
-    }
-  }, [userPubkey])
-  
   // ============================================
   // STEP 1: CREATE DEPOSIT INVOICE (Backend)
   // ============================================
@@ -265,12 +255,6 @@ function BitcoinConnectLightningGoalsManagerInner({
       return
     }
 
-    if (!userNwcString || !userNwcString.startsWith('nostr+walletconnect://')) {
-      console.log('[Manager] ❌ Invalid NWC string:', userNwcString ? 'provided' : 'missing')
-      alert('Please enter a valid NWC connection string (nostr+walletconnect://...)')
-      return
-    }
-    
     if (dailyReward <= 0) {
       console.log('[Manager] ❌ Invalid daily reward:', dailyReward)
       alert('Daily reward must be greater than 0')
@@ -290,8 +274,6 @@ function BitcoinConnectLightningGoalsManagerInner({
     console.log('[Manager] Settings:', { goalWords, stakeAmount, dailyReward, lightningAddress })
     
     try {
-      localStorage.setItem(`nwc-string-${userPubkey}`, userNwcString.trim())
-
       // Call backend to create invoice via YOUR NWC
       console.log('[Manager] 📡 Calling API with data:', {
         userPubkey,
@@ -729,22 +711,6 @@ function BitcoinConnectLightningGoalsManagerInner({
                   </p>
                 )}
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Your wallet's NWC connection string (nostr+walletconnect://...)
-                </label>
-                <input
-                  type="text"
-                  value={userNwcString}
-                  onChange={(e) => setUserNwcString(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  placeholder="nostr+walletconnect://..."
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Used by the app to create reward invoices on your wallet
-                </p>
-              </div>
             </div>
           </div>
           
@@ -759,7 +725,7 @@ function BitcoinConnectLightningGoalsManagerInner({
                 setPaymentMethod('connect')
                 await createDepositInvoice()
               }}
-              disabled={loading || !lightningAddress || !userNwcString || dailyReward <= 0 || stakeAmount <= 0}
+              disabled={loading || !lightningAddress || dailyReward <= 0 || stakeAmount <= 0}
               className="w-full py-4 bg-green-500 text-white rounded-lg font-medium text-lg
                        hover:bg-green-600 disabled:bg-gray-300 transition-colors
                        flex items-center justify-center gap-2"

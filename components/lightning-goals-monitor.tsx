@@ -89,11 +89,6 @@ export function LightningGoalsMonitor({
       // ⚠️ CRITICAL: Call SERVER API (don't try to use NWC directly)
       console.log('[Monitor] 📡 Calling server API...')
 
-      const userNwcString = localStorage.getItem(`nwc-string-${userPubkey}`)
-      if (!userNwcString) {
-        throw new Error('Missing NWC connection string for user')
-      }
-
       const response = await fetch('/api/incentive/send-reward', {
         method: 'POST',
         headers: {
@@ -102,7 +97,7 @@ export function LightningGoalsMonitor({
         body: JSON.stringify({
           userPubkey: userPubkey,
           date: new Date().toISOString().split('T')[0],
-          userNwcString,
+          lightningAddress: userLightningAddress,
           dailyRewardSats: rewardAmount
         })
       })

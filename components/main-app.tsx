@@ -466,10 +466,8 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
             year: '2-digit'
           })
           const rewardDate = new Date().toISOString().split('T')[0]
-          const userNwcString = localStorage.getItem(`nwc-string-${authData.pubkey}`)
-
-          if (!userNwcString) {
-            console.error('[MainApp] ❌ Missing NWC connection string for user')
+          if (!userLightningAddress) {
+            console.error('[MainApp] ❌ Missing Lightning address for user')
             return
           }
 
@@ -479,7 +477,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
             body: JSON.stringify({
               userPubkey: authData.pubkey,
               date: rewardDate,
-              userNwcString,
+              lightningAddress: userLightningAddress,
               dailyRewardSats: rewardAmount,
               memo: `Nostr Journal - ${dateString} Reward`
             })

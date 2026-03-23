@@ -12,13 +12,62 @@ function getAppNwc() {
   return new NWCClient({ nostrWalletConnectUrl: nwcString })
 }
 
+function getPayoutDate(date?: string) {
+  return date || new Date().toISOString().split('T')[0]
+}
+
+async function payToLightningAddress(lightningAddress: string, amountSats: number, description: string) {
+  const [name, domain] = lightningAddress.trim().toLowerCase().split('@')
+
+  if (!name || !domain) {
+    throw new Error('Invalid lightningAddress')
+  }
+
+  const lnurlRes = await fetch(`https://${domain}/.well-known/lnurlp/${name}`, {
+    cache: 'no-store'
+  })
+  if (!lnurlRes.ok) {
+    throw new Error('Failed to resolve lightning address')
+  }
+
+  const lnurlData = await lnurlRes.json()
+  if (!lnurlData?.callback) {
+    throw new Error('Lightning address callback missing')
+  }
+
+  const amountMsats = amountSats * 1000
+  const callbackUrl = new URL(lnurlData.callback)
+  callbackUrl.searchParams.set('amount', String(amountMsats))
+
+  if (lnurlData.commentAllowed && description) {
+    callbackUrl.searchParams.set('comment', description.slice(0, lnurlData.commentAllowed))
+  }
+
+  const invoiceRes = await fetch(callbackUrl.toString(), {
+    cache: 'no-store'
+  })
+  if (!invoiceRes.ok) {
+    throw new Error('Failed to get invoice from lightning address')
+  }
+
+  const invoiceData = await invoiceRes.json()
+  const invoice = invoiceData?.pr
+  if (!invoice || typeof invoice !== 'string') {
+    throw new Error('Lightning address did not return an invoice')
+  }
+
+  const appNwc = getAppNwc()
+  const { preimage } = await appNwc.sendPayment(invoice)
+  return { preimage, invoice }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const {
       userPubkey,
       date,
-      userNwcString,
+      lightningAddress,
       dailyRewardSats,
       amount,
       memo
@@ -30,27 +79,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'userPubkey required' }, { status: 400 })
     }
 
-    if (!userNwcString || typeof userNwcString !== 'string') {
-      return NextResponse.json({ success: false, error: 'userNwcString required' }, { status: 400 })
+    if (!lightningAddress || typeof lightningAddress !== 'string' || !lightningAddress.includes('@')) {
+      return NextResponse.json({ success: false, error: 'lightningAddress required' }, { status: 400 })
     }
 
     if (!payoutAmount || payoutAmount <= 0) {
       return NextResponse.json({ success: false, error: 'dailyRewardSats required' }, { status: 400 })
     }
 
-    const appNwc = getAppNwc()
-    const userNwc = new NWCClient({ nostrWalletConnectUrl: userNwcString })
-    const payoutDate = date || new Date().toISOString().split('T')[0]
+    const payoutDate = getPayoutDate(date)
     const description = memo || `Nostr Journal reward - ${payoutDate}`
 
-    log('Creating user invoice...')
-    const { invoice: payoutInvoice } = await userNwc.makeInvoice({
-      amount: payoutAmount,
-      description
-    })
-
-    log('Paying user invoice...')
-    const { preimage } = await appNwc.sendPayment(payoutInvoice)
+    log('Paying lightning address...', { lightningAddress, payoutAmount })
+    const { preimage, invoice } = await payToLightningAddress(lightningAddress, payoutAmount, description)
     const paymentHash = preimage
       ? createHash('sha256').update(Buffer.from(preimage, 'hex')).digest('hex')
       : undefined
@@ -58,6 +99,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       preimage,
+      invoice,
       paymentHash,
       amountSats: payoutAmount,
       date: payoutDate

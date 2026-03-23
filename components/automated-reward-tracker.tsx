@@ -283,9 +283,8 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
       }
       
       // Call API to send reward
-      const userNwcString = localStorage.getItem(`nwc-string-${userPubkey}`)
-      if (!userNwcString) {
-        throw new Error('Missing NWC connection string for user')
+      if (!settings?.lightningAddress) {
+        throw new Error('Missing Lightning address for user')
       }
 
       const response = await fetch('/api/incentive/send-reward', {
@@ -294,7 +293,7 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
         body: JSON.stringify({
           userPubkey,
           date: today,
-          userNwcString,
+          lightningAddress: settings.lightningAddress,
           dailyRewardSats: settings?.dailyRewardSats
         })
       })

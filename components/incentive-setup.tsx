@@ -12,8 +12,7 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
     dailyWordGoal: 500,
     dailyRewardSats: 500,
     lightningAddress: '',
-    stakeAmount: 5000,
-    userNwcString: ''
+    stakeAmount: 5000
   })
   const [depositInvoice, setDepositInvoice] = useState('')
   const [loading, setLoading] = useState(false)
@@ -46,11 +45,6 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
         },
         authData
       )
-
-      // Create deposit invoice
-      if (settings.userNwcString) {
-        localStorage.setItem(`nwc-string-${userPubkey}`, settings.userNwcString.trim())
-      }
 
       const response = await fetch('/api/incentive/create-deposit-invoice', {
         method: 'POST',
@@ -134,21 +128,6 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
             />
             <p className="text-sm text-muted-foreground mt-1">
               Where you'll receive your rewards
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Your wallet's NWC connection string (nostr+walletconnect://...)
-            </label>
-            <Input
-              type="text"
-              value={settings.userNwcString}
-              onChange={(e) => setSettings({...settings, userNwcString: e.target.value})}
-              placeholder="nostr+walletconnect://..."
-            />
-            <p className="text-sm text-muted-foreground mt-1">
-              Used to send you daily rewards
             </p>
           </div>
 
