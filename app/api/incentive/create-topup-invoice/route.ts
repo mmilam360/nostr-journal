@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const appNwc = getAppNwc()
     const description = `Nostr Journal top-up - ${userPubkey.substring(0, 8)} - ${timestamp}`
     const { invoice, payment_hash } = await appNwc.makeInvoice({
-      amount: amountSats,
+      amount: amountSats * 1000, // Alby Hub NWC uses msats
       description
     })
 
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       success: true,
       invoice,
       paymentHash: payment_hash,
-      amount: amountSats,
+      amount: amountSats * 1000, // Alby Hub NWC uses msats
       timestamp: new Date().toISOString()
     }
 

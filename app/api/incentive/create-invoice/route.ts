@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     log('📝 Creating invoice via NWC...')
 
     const { invoice, payment_hash } = await appNwc.makeInvoice({
-      amount: invoiceAmount,
+      amount: invoiceAmount * 1000, // Alby Hub NWC uses msats
       description: description || 'Nostr Journal Payment'
     })
 

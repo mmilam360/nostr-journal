@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const appNwc = getAppNwc()
     const description = `Nostr Journal stake deposit - ${userPubkey?.substring(0, 8) || 'user'}`
     const { invoice, payment_hash } = await appNwc.makeInvoice({
-      amount: amountSats,
+      amount: amountSats * 1000, // Alby Hub NWC treats amount as msats
       description
     })
 
