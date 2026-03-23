@@ -57,7 +57,7 @@ async function payToLightningAddress(lightningAddress: string, amountSats: numbe
   }
 
   const appNwc = getAppNwc()
-  const { preimage } = await appNwc.sendPayment(invoice)
+  const { preimage } = await appNwc.payInvoice({ invoice })
   return { preimage, invoice }
 }
 
