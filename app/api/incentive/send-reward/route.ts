@@ -63,6 +63,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (error: any) {
     log('❌ Error sending reward:', error.message)
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -46,6 +46,6 @@ export async function POST(request: NextRequest) {
     })
   } catch (err: any) {
     log('❌ Error creating deposit invoice:', err.message)
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 })
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

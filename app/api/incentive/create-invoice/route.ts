@@ -1,21 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { NWCClient } from '@getalby/sdk'
 
-// Test GET handler to verify route is working
-export async function GET(request: NextRequest) {
-  console.log('[API] create-invoice GET request received')
-  const hasEnv = !!process.env.APP_NWC_STRING
-  const envLength = process.env.APP_NWC_STRING?.length || 0
-  return NextResponse.json({
-    success: true,
-    message: 'API route is working',
-    hasNWC: hasEnv,
-    nwcLength: envLength,
-    runtime: 'nodejs'
-  })
-}
-
-
 const log = (msg: string, data?: any) => console.log(`[CreateInvoice] ${msg}`, data || '')
 
 function getAppNwc() {
@@ -74,14 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: false,
-      error: error.message || 'Failed to create invoice',
-      details: error.toString(),
-      stack: error.stack,
-      envCheck: {
-        hasNWC: !!process.env.APP_NWC_STRING,
-        envLength: process.env.APP_NWC_STRING?.length || 0,
-        runtime: 'nodejs'
-      }
+      error: 'Internal server error'
     }, { status: 500 })
   }
 }
