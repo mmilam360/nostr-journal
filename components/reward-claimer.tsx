@@ -46,10 +46,24 @@ export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
     setClaiming(true)
     try {
       // Call backend to send reward
+      const userNwcString = localStorage.getItem(`nwc-string-${userPubkey}`)
+      if (!userNwcString) {
+        throw new Error('Missing NWC connection string for user')
+      }
+
+      const dailyReward = parseInt(
+        settings.tags.find((t: string[]) => t[0] === 'daily_reward_sats')[1]
+      )
+
       const response = await fetch('/api/incentive/send-reward', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userPubkey })
+        body: JSON.stringify({
+          userPubkey,
+          date: new Date().toISOString().split('T')[0],
+          userNwcString,
+          dailyRewardSats: dailyReward
+        })
       })
 
       const result = await response.json()

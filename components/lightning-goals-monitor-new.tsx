@@ -250,13 +250,19 @@ export function LightningGoalsMonitor({
           // Continue with reward sending using saved address
           console.log('[Monitor] 💸 Sending', stake.rewardPerCompletion, 'sats to', finalAddress)
         
+        const userNwcString = localStorage.getItem(`nwc-string-${userPubkey}`)
+        if (!userNwcString) {
+          throw new Error('Missing NWC connection string for user')
+        }
+
         const rewardResult = await fetch('/api/incentive/send-reward', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userPubkey: userPubkey,
-            amount: stake.rewardPerCompletion,
-            lightningAddress: finalAddress
+            date: today,
+            userNwcString,
+            dailyRewardSats: stake.rewardPerCompletion
           })
         }).then(r => r.json())
         
@@ -338,13 +344,19 @@ export function LightningGoalsMonitor({
       console.log('[Monitor] Step 6: Sending reward...')
       console.log('[Monitor] 💸 Sending', stake.rewardPerCompletion, 'sats to', currentLightningAddress)
       
+      const userNwcString = localStorage.getItem(`nwc-string-${userPubkey}`)
+      if (!userNwcString) {
+        throw new Error('Missing NWC connection string for user')
+      }
+
       const rewardResult = await fetch('/api/incentive/send-reward', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userPubkey: userPubkey,
-          amount: stake.rewardPerCompletion,
-          lightningAddress: currentLightningAddress
+          date: today,
+          userNwcString,
+          dailyRewardSats: stake.rewardPerCompletion
         })
       }).then(r => r.json())
       

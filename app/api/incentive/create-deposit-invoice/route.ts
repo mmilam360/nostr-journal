@@ -1,8 +1,15 @@
-export const runtime = 'edge'
 import { NextRequest, NextResponse } from 'next/server'
-// import { NostrWebLNProvider } from '@getalby/sdk'
+import { NWCClient } from '@getalby/sdk'
 
 const log = (msg: string, data?: any) => console.log(`[CreateDepositInvoice] ${msg}`, data || '')
+
+function getAppNwc() {
+  const nwcString = process.env.APP_NWC_STRING
+  if (!nwcString) {
+    throw new Error('APP_NWC_STRING not configured')
+  }
+  return new NWCClient({ nostrWalletConnectUrl: nwcString })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,26 +20,32 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { userPubkey, amountSats } = body
 
-    // Zero-Dependency Mock Mode
-    log('⚠️ Using Zero-Dependency Simulation Mode')
+    if (!amountSats || amountSats <= 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'Invalid amountSats'
+      }, { status: 400 })
+    }
 
-    // Generate a simulated invoice (just a random string, not a real BOLT11)
-    // In a real scenario without SDK, we would fetch from a standalone LNURL service or similar.
-    const mockInvoice = "lnbc" + Date.now() + "1mockinvoice" + userPubkey.substring(0, 6)
-    const mockHash = "mock_hash_" + Date.now()
+    const appNwc = getAppNwc()
+    const description = `Nostr Journal stake deposit - ${userPubkey?.substring(0, 8) || 'user'}`
+    const { invoice, payment_hash } = await appNwc.makeInvoice({
+      amount: amountSats,
+      description
+    })
 
     return NextResponse.json({
       success: true,
-      invoice: mockInvoice,
-      paymentHash: mockHash,
-      amount: amountSats,
-      message: "Simulation Mode - Invoice Created"
+      invoice,
+      paymentHash: payment_hash,
+      amount: amountSats
     }, {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate'
       }
     })
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    log('❌ Error creating deposit invoice:', err.message)
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 })
   }
 }

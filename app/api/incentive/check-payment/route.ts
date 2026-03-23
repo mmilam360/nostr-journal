@@ -1,5 +1,13 @@
-export const runtime = 'edge'
 import { NextRequest, NextResponse } from 'next/server'
+import { NWCClient } from '@getalby/sdk'
+
+function getAppNwc() {
+  const nwcString = process.env.APP_NWC_STRING
+  if (!nwcString) {
+    throw new Error('APP_NWC_STRING not configured')
+  }
+  return new NWCClient({ nostrWalletConnectUrl: nwcString })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,31 +22,13 @@ export async function POST(request: NextRequest) {
 
     console.log('[API] Checking payment for:', paymentHash)
 
-    // Check if invoice exists
-    const invoices = global.invoices || {}
-    const invoice = invoices[paymentHash]
-
-    if (!invoice) {
-      return NextResponse.json({
-        success: false,
-        error: 'Invoice not found'
-      }, { status: 404 })
-    }
-
-    // For testing purposes, mark as paid after 10 seconds
-    const timeSinceCreated = Date.now() - invoice.createdAt
-    const isPaid = timeSinceCreated > 10000 // 10 seconds
-
-    if (isPaid && !invoice.paid) {
-      invoice.paid = true
-      console.log('[API] ✅ Payment confirmed for:', paymentHash)
-    }
+    const appNwc = getAppNwc()
+    const { settled } = await appNwc.lookupInvoice({ payment_hash: paymentHash })
 
     return NextResponse.json({
       success: true,
-      paid: invoice.paid,
-      amount: invoice.amount,
-      paymentHash
+      paid: settled,
+      settled
     })
 
   } catch (error) {

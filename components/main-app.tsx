@@ -464,14 +464,22 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
             day: '2-digit',
             year: '2-digit'
           })
+          const rewardDate = new Date().toISOString().split('T')[0]
+          const userNwcString = localStorage.getItem(`nwc-string-${authData.pubkey}`)
+
+          if (!userNwcString) {
+            console.error('[MainApp] ❌ Missing NWC connection string for user')
+            return
+          }
 
           const response = await fetch('/api/incentive/send-reward', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               userPubkey: authData.pubkey,
-              amount: rewardAmount,
-              isRefund: false,
+              date: rewardDate,
+              userNwcString,
+              dailyRewardSats: rewardAmount,
               memo: `Nostr Journal - ${dateString} Reward`
             })
           })

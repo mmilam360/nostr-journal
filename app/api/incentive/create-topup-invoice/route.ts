@@ -1,8 +1,15 @@
-export const runtime = 'edge'
 import { NextRequest, NextResponse } from 'next/server'
-// import { NostrWebLNProvider } from '@getalby/sdk'
+import { NWCClient } from '@getalby/sdk'
 
 const log = (msg: string, data?: any) => console.log(`[CreateTopUpInvoice] ${msg}`, data || '')
+
+function getAppNwc() {
+  const nwcString = process.env.APP_NWC_STRING
+  if (!nwcString) {
+    throw new Error('APP_NWC_STRING not configured')
+  }
+  return new NWCClient({ nostrWalletConnectUrl: nwcString })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,70 +31,17 @@ export async function POST(request: NextRequest) {
       throw new Error('Invalid userPubkey')
     }
 
-    // Get NWC connection URL from environment
-    const NWC_CONNECTION_URL = process.env.NWC_CONNECTION_URL
-
-    if (!NWC_CONNECTION_URL) {
-      log('❌ NWC_CONNECTION_URL not configured!')
-      throw new Error('Server not configured: NWC_CONNECTION_URL missing')
-    }
-
-    log('✅ NWC_CONNECTION_URL found')
-    log('🔌 NWC preview:', NWC_CONNECTION_URL.substring(0, 50) + '...')
-
-    // Connect to NWC
-    log('🔌 Creating NWC connection...')
-    // const { NostrWebLNProvider } = await import('@getalby/sdk')
-
-    // const nwc = new NostrWebLNProvider({
-    //   nostrWalletConnectUrl: NWC_CONNECTION_URL
-    // })
-
-    log('🔌 Enabling NWC...')
-    // await nwc.enable()
-
-    log('✅ NWC connected successfully')
-
-    // Create invoice
-    log('📝 Creating top-up invoice via NWC...')
-
-    // const invoice = await nwc.makeInvoice({
-    //   amount: amountSats,  // Amount in sats
-    //   memo: `Nostr Journal top-up - ${userPubkey.substring(0, 8)} - ${timestamp}`
-    // })
-    const invoice = {
-      paymentRequest: "lnbc1mock" + Date.now(),
-      paymentHash: "mockhash" + Date.now()
-    }
-
-    log('✅ Top-up invoice created via NWC (MOCKED)')
-    // log('📋 Invoice string length:', invoice.paymentRequest?.length || 0)
-    // log('📋 Invoice string preview:', invoice.paymentRequest?.substring(0, 80) + '...')
-    // log('📋 Full invoice string:', invoice.paymentRequest)
-    // log('📋 Full invoice object:', JSON.stringify(invoice, null, 2))
-
-    // Extract payment hash from NWC response (if available)
-    let paymentHash = invoice.paymentHash || invoice.payment_hash || invoice.rHash || invoice.r_hash
-
-    // If not available, try to get it from the invoice object
-    if (!paymentHash && invoice.invoice) {
-      paymentHash = invoice.invoice.paymentHash || invoice.invoice.payment_hash
-    }
-
-    // Last resort: generate tracking ID (though this won't work for verification)
-    if (!paymentHash) {
-      log('⚠️ No payment hash found in NWC response, generating tracking ID')
-      paymentHash = `${userPubkey.substring(0, 8)}-topup-${amountSats}-${timestamp}`
-    }
-
-    log('✅ Payment hash for verification:', paymentHash)
-    log('✅ Payment hash is real (64 char hex):', /^[a-f0-9]{64}$/i.test(paymentHash))
-    log('========================================')
+    const appNwc = getAppNwc()
+    const description = `Nostr Journal top-up - ${userPubkey.substring(0, 8)} - ${timestamp}`
+    const { invoice, payment_hash } = await appNwc.makeInvoice({
+      amount: amountSats,
+      description
+    })
 
     const response = {
       success: true,
-      invoice: invoice.paymentRequest,      // BOLT11 invoice string
-      paymentHash: paymentHash,             // Real payment hash or tracking ID
+      invoice,
+      paymentHash: payment_hash,
       amount: amountSats,
       timestamp: new Date().toISOString()
     }

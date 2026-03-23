@@ -1,11 +1,11 @@
-export const runtime = 'edge'
 import { NextRequest, NextResponse } from 'next/server'
+import { NWCClient } from '@getalby/sdk'
 
 // Test GET handler to verify route is working
 export async function GET(request: NextRequest) {
   console.log('[API] create-invoice GET request received')
-  const hasEnv = !!process.env.NWC_CONNECTION_URL
-  const envLength = process.env.NWC_CONNECTION_URL?.length || 0
+  const hasEnv = !!process.env.APP_NWC_STRING
+  const envLength = process.env.APP_NWC_STRING?.length || 0
   return NextResponse.json({
     success: true,
     message: 'API route is working',
@@ -16,9 +16,15 @@ export async function GET(request: NextRequest) {
 }
 
 
-// import { NostrWebLNProvider } from '@getalby/sdk'
-
 const log = (msg: string, data?: any) => console.log(`[CreateInvoice] ${msg}`, data || '')
+
+function getAppNwc() {
+  const nwcString = process.env.APP_NWC_STRING
+  if (!nwcString) {
+    throw new Error('APP_NWC_STRING not configured')
+  }
+  return new NWCClient({ nostrWalletConnectUrl: nwcString })
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,9 +34,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     log('📝 Request body:', body)
-    const { amount, description } = body
+    const { amount, amountSats, description } = body
+    const invoiceAmount = amountSats ?? amount
 
-    if (!amount || amount <= 0) {
+    if (!invoiceAmount || invoiceAmount <= 0) {
       log('❌ Invalid amount')
       return NextResponse.json({
         success: false,
@@ -38,62 +45,21 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Get NWC connection URL from environment
-    const NWC_CONNECTION_URL = process.env.NWC_CONNECTION_URL
-
-    if (!NWC_CONNECTION_URL) {
-      log('❌ NWC_CONNECTION_URL not configured!')
-      console.error('Environment variables available:', Object.keys(process.env))
-      throw new Error('Server not configured: NWC_CONNECTION_URL missing')
-    } else {
-      log('✅ NWC_CONNECTION_URL found (length: ' + NWC_CONNECTION_URL.length + ')')
-    }
-
-    // Connect to NWC
-    log('🔌 Creating NWC connection...')
-    // Dynamic import to prevent Edge startup crashes if SDK initializes globally
-    // const { NostrWebLNProvider } = await import('@getalby/sdk')
-
-    // const nwc = new NostrWebLNProvider({
-    //   nostrWalletConnectUrl: NWC_CONNECTION_URL
-    // })
-
-    log('🔌 Enabling NWC...')
-
-    // Create a timeout promise to prevent hanging
-    // const timeout = new Promise((_, reject) => 
-    //   setTimeout(() => reject(new Error('NWC connection timed out after 8 seconds')), 8000)
-    // )
-
-    // Race connection against timeout
-    // await Promise.race([
-    //   nwc.enable(),
-    //   timeout
-    // ])
-
-    log('✅ NWC connected')
-
+    const appNwc = getAppNwc()
     log('📝 Creating invoice via NWC...')
-    // const invoice = await nwc.makeInvoice({
-    //   amount: amount,
-    //   memo: description || 'Nostr Journal Payment'
-    // })
 
-    const invoice = {
-      paymentRequest: "lnbc1mock" + Date.now(),
-      paymentHash: "mockhash" + Date.now()
-    }
+    const { invoice, payment_hash } = await appNwc.makeInvoice({
+      amount: invoiceAmount,
+      description: description || 'Nostr Journal Payment'
+    })
 
-    log('✅ Invoice created via NWC (MOCKED)')
-
-    // Extract payment hash
-    let paymentHash = invoice.paymentHash
+    log('✅ Invoice created via NWC')
 
     return NextResponse.json({
       success: true,
-      invoice: invoice.paymentRequest,
-      paymentHash: paymentHash,
-      amount
+      invoice,
+      paymentHash: payment_hash,
+      amount: invoiceAmount
     }, {
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -112,9 +78,9 @@ export async function POST(request: NextRequest) {
       details: error.toString(),
       stack: error.stack,
       envCheck: {
-        hasNWC: !!process.env.NWC_CONNECTION_URL,
-        envLength: process.env.NWC_CONNECTION_URL?.length || 0,
-        runtime: 'edge' // Hardcoded to confirm this file version is live
+        hasNWC: !!process.env.APP_NWC_STRING,
+        envLength: process.env.APP_NWC_STRING?.length || 0,
+        runtime: 'nodejs'
       }
     }, { status: 500 })
   }

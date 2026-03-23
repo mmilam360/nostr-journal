@@ -1,38 +1,41 @@
-export const runtime = 'edge'
 import { NextRequest, NextResponse } from 'next/server'
-// import { NostrWebLNProvider } from '@getalby/sdk'
+import { NWCClient } from '@getalby/sdk'
 
 const log = (msg: string, data?: any) => console.log(`[VerifyPayment] ${msg}`, data || '')
+
+function getAppNwc() {
+  const nwcString = process.env.APP_NWC_STRING
+  if (!nwcString) {
+    throw new Error('APP_NWC_STRING not configured')
+  }
+  return new NWCClient({ nostrWalletConnectUrl: nwcString })
+}
 
 export async function POST(request: NextRequest) {
   try {
     log('========================================')
-    log('📥 VERIFY PAYMENT REQUEST (MOCK MODE)')
+    log('📥 VERIFY PAYMENT REQUEST')
     log('========================================')
     const body = await request.json()
-    const { paymentHash, invoiceString } = body
+    const { paymentHash, payment_hash } = body
+    const hash = paymentHash || payment_hash
 
-    // Zero-Dependency Mock Mode
-    const isMock = paymentHash.startsWith('mock_hash_')
-
-    if (isMock) {
-      log('✅ Auto-Approving Simulation Invoice')
+    if (!hash) {
       return NextResponse.json({
-        success: true,
-        paid: true,
-        amount: 1000,
-        settledAt: Date.now() / 1000,
-        state: 'SETTLED',
-        lookupMethod: 'simulation'
-      }, {
-        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
-      })
+        success: false,
+        error: 'paymentHash required'
+      }, { status: 400 })
     }
+
+    const appNwc = getAppNwc()
+    const { settled } = await appNwc.lookupInvoice({ payment_hash: hash })
 
     return NextResponse.json({
       success: true,
-      paid: false,
-      state: 'PENDING'
+      settled,
+      paid: settled
+    }, {
+      headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
     })
 
   } catch (error: any) {

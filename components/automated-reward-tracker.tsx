@@ -282,10 +282,20 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
       }
       
       // Call API to send reward
+      const userNwcString = localStorage.getItem(`nwc-string-${userPubkey}`)
+      if (!userNwcString) {
+        throw new Error('Missing NWC connection string for user')
+      }
+
       const response = await fetch('/api/incentive/send-reward', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userPubkey })
+        body: JSON.stringify({
+          userPubkey,
+          date: today,
+          userNwcString,
+          dailyRewardSats: settings?.dailyRewardSats
+        })
       })
 
       const result = await response.json()
