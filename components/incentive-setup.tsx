@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { fetchIncentiveSettings, saveIncentiveSettings } from '@/lib/incentive-nostr'
+import { QRCodeSVG } from 'qrcode.react'
 
 export function IncentiveSetup({ userPubkey, authData }: any) {
   const [step, setStep] = useState(1)
@@ -15,6 +16,8 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
     stakeAmount: 5000
   })
   const [depositInvoice, setDepositInvoice] = useState('')
+  const [paymentHash, setPaymentHash] = useState('')
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'paying' | 'paid' | 'error'>('idle')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -55,14 +58,48 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
         })
       })
 
-      const { invoice } = await response.json()
+      const { invoice, paymentHash: newPaymentHash } = await response.json()
       setDepositInvoice(invoice)
+      setPaymentHash(newPaymentHash)
       setStep(4)
     } catch (error) {
       alert('Failed to create deposit invoice')
       console.error(error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const pollPaymentConfirmation = async (hash: string) => {
+    for (let i = 0; i < 20; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+      const res = await fetch('/api/incentive/check-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentHash: hash })
+      })
+      const data = await res.json()
+      if (data.paid) {
+        setStep(5)
+        return
+      }
+    }
+  }
+
+  const handleWeblnPay = async () => {
+    setPaymentStatus('paying')
+    try {
+      if (window.webln) {
+        await window.webln.enable()
+        await window.webln.sendPayment(depositInvoice)
+        setPaymentStatus('paid')
+        await pollPaymentConfirmation(paymentHash)
+      } else {
+        setPaymentStatus('error')
+      }
+    } catch (error: any) {
+      console.error('webln payment error:', error)
+      setPaymentStatus('error')
     }
   }
 
@@ -158,12 +195,40 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
 
       {step === 4 && depositInvoice && (
         <div className="space-y-4">
-          <h3 className="font-semibold">Pay This Invoice to Activate</h3>
-          <div className="p-4 bg-gray-100 rounded break-all text-sm font-mono">
-            {depositInvoice}
+          <h3 className="font-semibold">Pay to Activate Your Stake</h3>
+          <p className="text-sm text-muted-foreground">
+            {settings.stakeAmount} sats · {Math.floor(settings.stakeAmount / settings.dailyRewardSats)} days of rewards
+          </p>
+
+          {paymentStatus === 'idle' && (
+            <Button onClick={handleWeblnPay} className="w-full">
+              Pay with Alby Extension
+            </Button>
+          )}
+
+          {paymentStatus === 'paying' && (
+            <p className="text-center text-sm text-muted-foreground">Waiting for payment...</p>
+          )}
+
+          {paymentStatus === 'paid' && (
+            <div className="text-green-600 font-semibold text-center">✓ Payment confirmed! Stake activated.</div>
+          )}
+
+          {paymentStatus === 'error' && (
+            <p className="text-red-500 text-sm">Payment failed. Try the QR code below.</p>
+          )}
+
+          <div className="text-center">
+            <p className="text-xs text-muted-foreground mb-2">Or scan with any Lightning wallet</p>
+            <QRCodeSVG value={`lightning:${depositInvoice}`} size={200} className="mx-auto" />
           </div>
-          <Button onClick={() => window.location.reload()} className="w-full">
-            I've Paid the Invoice
+
+          <Button
+            variant="outline"
+            onClick={() => navigator.clipboard.writeText(depositInvoice)}
+            className="w-full"
+          >
+            Copy Invoice
           </Button>
         </div>
       )}

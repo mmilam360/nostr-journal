@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
     if (!paymentHash) {
       return NextResponse.json({
         success: false,
+        paid: false,
         error: 'Payment hash required'
       }, { status: 400 })
     }
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
     console.error('[API] Error checking payment:', error)
     return NextResponse.json({
       success: false,
+      paid: false,
       error: 'Failed to check payment'
     }, { status: 500 })
   }
