@@ -78,6 +78,7 @@ import { ConnectionStatus } from "@/components/connection-status"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { getDefaultRelays, initializePersistentRelayPool, shutdownPersistentRelayPool } from "@/lib/relay-manager"
 import { DonationModal } from "@/components/donation-modal-proper"
+import { publishPayoutRecord } from "@/lib/incentive-payout"
 // Note: Unified remote signer imports are done dynamically when needed
 import { LoadingScreen } from "@/components/loading-screen"
 // Note: Nip46SessionState type removed as we're using unified remote signer
@@ -489,6 +490,19 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
 
           if (result.success) {
             console.log('[MainApp] ✅ Reward sent successfully!')
+
+            const payoutDate = result.date || rewardDate
+            try {
+              await publishPayoutRecord({
+                userPubkey: authData.pubkey,
+                date: payoutDate,
+                amountSats: result.amountSats,
+                preimage: result.preimage,
+                authData
+              })
+            } catch (error) {
+              console.error('[MainApp] ❌ Failed to publish payout record:', error)
+            }
 
             // Record reward payout event
             await recordRewardSent(authData.pubkey, rewardAmount, authData)

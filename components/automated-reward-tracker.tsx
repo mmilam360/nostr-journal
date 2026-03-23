@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Gift, Target, Zap, CheckCircle, AlertTriangle, TrendingUp, Copy, ExternalLink } from 'lucide-react'
+import { publishPayoutRecord } from '@/lib/incentive-payout'
 
 interface AutomatedRewardTrackerProps {
   userPubkey: string
@@ -305,6 +306,19 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
       }
 
       console.log('[Tracker] ✅ Reward claimed!', result.paymentHash)
+
+      const payoutDate = result.date || today
+      try {
+        await publishPayoutRecord({
+          userPubkey,
+          date: payoutDate,
+          amountSats: result.amountSats,
+          preimage: result.preimage,
+          authData
+        })
+      } catch (error) {
+        console.error('[Tracker] ❌ Failed to publish payout record:', error)
+      }
       
       // Store payment result for UI
       setPaymentResult(result)
@@ -314,7 +328,7 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
       
       await markRewardClaimed(
         userPubkey,
-        today,
+        payoutDate,
         result.paymentHash,
         result.amountSats,
         authData

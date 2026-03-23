@@ -8,6 +8,7 @@ import {
   recordTransaction, 
   recordDailyProgress 
 } from '@/lib/incentive-nostr-new'
+import { publishPayoutRecord } from '@/lib/incentive-payout'
 
 interface LightningGoalsMonitorProps {
   userPubkey: string
@@ -273,6 +274,19 @@ export function LightningGoalsMonitor({
         
         console.log('[Monitor] ✅ Reward sent successfully!')
         console.log('[Monitor] Payment hash:', rewardResult.paymentHash)
+
+        const payoutDate = rewardResult.date || today
+        try {
+          await publishPayoutRecord({
+            userPubkey,
+            date: payoutDate,
+            amountSats: rewardResult.amountSats,
+            preimage: rewardResult.preimage,
+            authData
+          })
+        } catch (error) {
+          console.error('[Monitor] ❌ Failed to publish payout record:', error)
+        }
         
         // Continue with balance update and recording...
         const newBalance = stake.currentBalance - stake.rewardPerCompletion
@@ -367,6 +381,19 @@ export function LightningGoalsMonitor({
       
       console.log('[Monitor] ✅ Reward sent successfully!')
       console.log('[Monitor] Payment hash:', rewardResult.paymentHash)
+
+      const payoutDate = rewardResult.date || today
+      try {
+        await publishPayoutRecord({
+          userPubkey,
+          date: payoutDate,
+          amountSats: rewardResult.amountSats,
+          preimage: rewardResult.preimage,
+          authData
+        })
+      } catch (error) {
+        console.error('[Monitor] ❌ Failed to publish payout record:', error)
+      }
       
       // Step 7: Update balance
       console.log('[Monitor] Step 7: Updating balance...')

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { getLightningGoals, updateWordCount, recordRewardSent } from '@/lib/lightning-goals'
+import { publishPayoutRecord } from '@/lib/incentive-payout'
 
 interface Props {
   userPubkey: string
@@ -124,6 +125,19 @@ export function LightningGoalsMonitor({
       
       console.log('[Monitor] ✅ REWARD SENT!')
       console.log('[Monitor] 💰 Payment hash:', apiResult.paymentHash)
+
+      const payoutDate = apiResult.date || new Date().toISOString().split('T')[0]
+      try {
+        await publishPayoutRecord({
+          userPubkey,
+          date: payoutDate,
+          amountSats: apiResult.amountSats,
+          preimage: apiResult.preimage,
+          authData
+        })
+      } catch (error) {
+        console.error('[Monitor] ❌ Failed to publish payout record:', error)
+      }
       
       // Record it
       await recordRewardSent(userPubkey, rewardAmount, authData)

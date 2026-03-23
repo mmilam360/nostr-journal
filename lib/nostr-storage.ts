@@ -110,6 +110,38 @@ async function publishToRelaysIndividually(
   return results
 }
 
+export async function publishSignedEvent(
+  signedEvent: any,
+  relays?: string[]
+): Promise<string[]> {
+  let relayList = relays
+
+  if (!relayList || relayList.length === 0) {
+    try {
+      relayList = await getSmartRelayList()
+      console.log("[Storage] 📡 Using smart relay list:", relayList)
+    } catch (error) {
+      console.warn("[Storage] ⚠️ Failed to get smart relays, using fallback:", error)
+      relayList = getRelays()
+    }
+  }
+
+  const relayResults = await publishToRelaysIndividually(signedEvent, relayList)
+  const successfulRelays = relayResults.filter(r => r.success)
+  const failedRelays = relayResults.filter(r => !r.success)
+
+  console.log("[Storage] 📊 Publish Results:")
+  console.log("[Storage] ✅ Successful:", successfulRelays.map(r => r.url))
+  console.log("[Storage] ❌ Failed:", failedRelays.map(r => `${r.url}: ${r.error}`))
+
+  if (successfulRelays.length === 0) {
+    const errorDetails = failedRelays.map(r => `${r.url}: ${r.error}`).join("; ")
+    throw new Error(`Failed to publish to any relay. Errors: ${errorDetails}`)
+  }
+
+  return successfulRelays.map(r => r.url)
+}
+
 // ===================================================================================
 // SMART RELAY MANAGEMENT: Dynamic relay selection with health checking
 // ===================================================================================

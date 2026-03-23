@@ -59,7 +59,8 @@ export async function POST(request: NextRequest) {
       success: true,
       preimage,
       paymentHash,
-      amountSats: payoutAmount
+      amountSats: payoutAmount,
+      date: payoutDate
     })
   } catch (error: any) {
     log('❌ Error sending reward:', error.message)

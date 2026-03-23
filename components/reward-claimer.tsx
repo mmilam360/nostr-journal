@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { fetchIncentiveSettings, fetchTodayProgress, markRewardClaimed, recordTransaction, updateStakeBalance } from '@/lib/incentive-nostr'
+import { publishPayoutRecord } from '@/lib/incentive-payout'
 
 export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
   const [status, setStatus] = useState<'loading' | 'not_met' | 'met' | 'claimed'>('loading')
@@ -74,9 +75,23 @@ export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
 
       // Mark as claimed in Nostr
       const today = new Date().toISOString().split('T')[0]
+      const payoutDate = result.date || today
+
+      try {
+        await publishPayoutRecord({
+          userPubkey,
+          date: payoutDate,
+          amountSats: result.amountSats,
+          preimage: result.preimage,
+          authData
+        })
+      } catch (error) {
+        console.error('[RewardClaimer] ❌ Failed to publish payout record:', error)
+      }
+
       await markRewardClaimed(
         userPubkey,
-        today,
+        payoutDate,
         result.paymentHash,
         result.amountSats,
         authData
