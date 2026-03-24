@@ -24,12 +24,16 @@ export async function POST(request: NextRequest) {
     console.log('[API] Checking payment for:', paymentHash)
 
     const appNwc = getAppNwc()
-    const { settled } = await appNwc.lookupInvoice({ payment_hash: paymentHash })
+    const invoice = await appNwc.lookupInvoice({ payment_hash: paymentHash })
+
+    // Alby Hub returns state:"settled" and settled_at: <timestamp>, not a boolean `settled` field
+    const paid = invoice.state === 'settled' || invoice.settled_at != null
 
     return NextResponse.json({
       success: true,
-      paid: settled,
-      settled
+      paid,
+      settled: paid,
+      state: invoice.state,
     })
 
   } catch (error) {

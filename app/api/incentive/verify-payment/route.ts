@@ -28,12 +28,22 @@ export async function POST(request: NextRequest) {
     }
 
     const appNwc = getAppNwc()
-    const { settled } = await appNwc.lookupInvoice({ payment_hash: hash })
+    const invoice = await appNwc.lookupInvoice({ payment_hash: hash })
+
+    // Alby Hub returns state:"settled" and settled_at: <timestamp> (not a boolean `settled` field)
+    const paid = invoice.state === 'settled' || invoice.settled_at != null
+    const amount = invoice.amount ? Math.round(invoice.amount / 1000) : undefined // msats → sats
+
+    log('Invoice state:', invoice.state)
+    log('settled_at:', invoice.settled_at)
+    log('paid:', paid)
 
     return NextResponse.json({
       success: true,
-      settled,
-      paid: settled
+      settled: paid,
+      paid,
+      amount,
+      state: invoice.state,
     }, {
       headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
     })
