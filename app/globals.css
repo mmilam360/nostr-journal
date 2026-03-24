@@ -362,7 +362,7 @@ button {
 }
 
 .status-syncing {
-  color: rgb(99, 102, 241); /* Softer blue */
+  color: rgb(247, 147, 26); /* Bitcoin orange */
 }
 
 .status-error {

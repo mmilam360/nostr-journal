@@ -39,7 +39,7 @@ export function LightningInvoiceQR({
       {/* Copy Invoice String Button */}
       <button
         onClick={handleCopyInvoice}
-        className="w-full py-2 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+        className="w-full py-2 px-4 bg-[#F7931A] hover:bg-[#E8850F] text-black rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
       >
         {copied ? (
           <>

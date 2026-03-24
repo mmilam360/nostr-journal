@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ClientOnly } from './client-only'
+import { CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function WalletConnect() {
@@ -129,8 +130,8 @@ function WalletConnectInner() {
   if (isLoading) {
     return (
       <div className="text-center py-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
-        <p className="text-sm text-gray-600">Loading wallet connection...</p>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#F7931A] mx-auto mb-2"></div>
+        <p className="text-sm text-zinc-400">Loading wallet connection...</p>
       </div>
     )
   }
@@ -139,12 +140,12 @@ function WalletConnectInner() {
     <div className="flex flex-col gap-2">
       {!isConnected ? (
         <div className="text-center">
-          <p className="mb-3 text-sm text-gray-600">
+          <p className="mb-3 text-sm text-zinc-400">
             Connect your Lightning wallet to deposit stake
           </p>
           <button
             onClick={handleConnect}
-            className="w-full py-3 bg-blue-500 text-white rounded font-medium hover:bg-blue-600 transition-colors"
+            className="w-full py-3 bg-[#F7931A] hover:bg-[#E8850F] text-black rounded font-medium transition-colors"
           >
             Connect Lightning Wallet
           </button>
@@ -152,16 +153,16 @@ function WalletConnectInner() {
       ) : (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-green-600 font-medium">✓ Wallet Connected</span>
+            <span className="text-emerald-400 font-medium flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Wallet Connected</span>
             {walletInfo && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-zinc-500">
                 {walletInfo.node?.alias || 'Lightning Wallet'}
               </span>
             )}
           </div>
-          <button 
+          <button
             onClick={handleDisconnect}
-            className="text-xs text-gray-500 hover:text-gray-700"
+            className="text-xs text-zinc-500 hover:text-zinc-300"
           >
             Change Wallet
           </button>

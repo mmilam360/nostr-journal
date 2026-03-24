@@ -44,7 +44,7 @@ export default function NoteList({ notes, selectedNote, onSelectNote, onCreateNo
     }
     // Otherwise it's local only
     else {
-      return <CloudOff className="w-3 h-3 text-gray-400" title="Local only" />
+      return <CloudOff className="w-3 h-3 text-zinc-500" title="Local only" />
     }
   }
 

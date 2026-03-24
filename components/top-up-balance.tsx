@@ -239,12 +239,12 @@ export function TopUpBalance({ userPubkey, authData, currentBalance, onTopUpComp
   // Show QR code payment screen
   if (paymentMethod === 'invoice' && invoiceData) {
     return (
-      <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+      <div className="bg-[#1a1a1a] p-6 rounded-lg border border-zinc-800">
         <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+          <h3 className="text-lg font-semibold text-zinc-100 mb-2">
             Top-Up Payment
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-zinc-400">
             {paymentVerified ? 'Payment Confirmed!' : isCheckingPayment ? 'Waiting for payment...' : 'Scan QR code or copy invoice to pay'}
           </p>
         </div>
@@ -271,10 +271,10 @@ export function TopUpBalance({ userPubkey, authData, currentBalance, onTopUpComp
 
             {/* Checking Status */}
             {isCheckingPayment && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-3 text-sm text-blue-700 dark:text-blue-300 mb-4 flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
+              <div className="bg-[#F7931A]/10 border border-[#F7931A]/20 rounded p-3 text-sm text-zinc-200 mb-4 flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-[#F7931A]" />
                 Checking for payment...
-                <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                <div className="text-xs text-zinc-400 mt-1">
                   Checking every 3 seconds for up to 3 minutes
                 </div>
               </div>
@@ -339,17 +339,17 @@ export function TopUpBalance({ userPubkey, authData, currentBalance, onTopUpComp
 
   // Show amount input and payment method selection
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="bg-[#1a1a1a] p-6 rounded-lg border border-zinc-800">
       <div className="flex items-center gap-2 mb-4">
-        <Plus className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+        <Plus className="w-5 h-5 text-[#F7931A]" />
+        <h3 className="text-lg font-semibold text-zinc-100">
           Top Up Balance
         </h3>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-zinc-300 mb-2">
             Amount to add (sats)
           </label>
           <Input
@@ -543,7 +543,7 @@ function BitcoinConnectTopUp({
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Verifying Payment...
-              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs text-zinc-400 mt-1">
                 Checking every 3 seconds for up to 3 minutes
               </div>
             </>

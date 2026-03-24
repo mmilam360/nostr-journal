@@ -44,7 +44,7 @@ export function ConnectionStatus({ onRetry, className = "" }: ConnectionStatusPr
 
   const getStatusIcon = () => {
     if (isChecking) return <Loader2 className="h-4 w-4 animate-spin" />
-    if (isConnected === null) return <Wifi className="h-4 w-4 text-gray-400" />
+    if (isConnected === null) return <Wifi className="h-4 w-4 text-zinc-500" />
     if (isConnected) return <CheckCircle2 className="h-4 w-4 text-green-500" />
     return <WifiOff className="h-4 w-4 text-red-500" />
   }
@@ -58,7 +58,7 @@ export function ConnectionStatus({ onRetry, className = "" }: ConnectionStatusPr
 
   const getStatusColor = () => {
     if (isChecking) return "text-yellow-600"
-    if (isConnected === null) return "text-gray-600"
+    if (isConnected === null) return "text-zinc-500"
     if (isConnected) return "text-green-600"
     return "text-red-600"
   }
@@ -71,7 +71,7 @@ export function ConnectionStatus({ onRetry, className = "" }: ConnectionStatusPr
       </span>
       
       {lastCheck && (
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-zinc-500">
           ({lastCheck.toLocaleTimeString()})
         </span>
       )}
@@ -183,7 +183,7 @@ export function DetailedConnectionStatus({ className = "" }: DetailedConnectionS
       <div className="space-y-2">
         {relayHealth.map((relay) => (
           <div key={relay.url} className="flex items-center justify-between text-xs">
-            <span className="font-mono text-gray-600 truncate flex-1 mr-2">
+            <span className="font-mono text-zinc-500 truncate flex-1 mr-2">
               {relay.url.replace('wss://', '')}
             </span>
             <div className="flex items-center gap-1">
@@ -203,7 +203,7 @@ export function DetailedConnectionStatus({ className = "" }: DetailedConnectionS
       </div>
       
       {relayHealth.length > 0 && (
-        <div className="text-xs text-gray-500 pt-2 border-t">
+        <div className="text-xs text-zinc-500 pt-2 border-t">
           {relayHealth.filter(r => r.healthy).length} of {relayHealth.length} relays healthy
         </div>
       )}
