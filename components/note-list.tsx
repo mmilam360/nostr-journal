@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { CheckCircle, Loader2, AlertCircle, CloudOff, AlertTriangle, Calendar, Plus, Upload, Download, Search } from "lucide-react"
+import { CheckCircle, Loader2, AlertCircle, CloudOff, AlertTriangle, Calendar, Plus, Upload, Download, Search, FileText } from "lucide-react"
 import type { Note } from "@/components/main-app"
 
 interface NoteListProps {
@@ -66,7 +66,7 @@ export default function NoteList({ notes, selectedNote, onSelectNote, onCreateNo
 
 
   return (
-    <div className="w-full md:w-80 bg-white dark:bg-card flex flex-col h-full border-r border-border">
+    <div className="w-full md:w-80 bg-[#0a0a0a] flex flex-col h-full border-r border-zinc-800">
       <div className="p-4 border-b border-border">
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -90,7 +90,9 @@ export default function NoteList({ notes, selectedNote, onSelectNote, onCreateNo
       <div className="flex-1 overflow-y-auto">
         {filteredNotes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-            <div className="text-4xl text-muted-foreground mb-4">📝</div>
+            <div className="text-muted-foreground mb-4">
+              <FileText className="w-10 h-10 mx-auto" />
+            </div>
             <p className="text-muted-foreground">
               {notes.length === 0
                 ? "Your journal is empty. Create a new note to begin."

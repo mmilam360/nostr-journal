@@ -537,7 +537,7 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
                 <Zap className="w-5 h-5 text-blue-600" />
               </div>
               <p className="text-sm font-semibold text-blue-800">
-                🎯 Goal Achieved! Processing reward...
+                Goal Achieved — Processing reward...
               </p>
             </div>
             <p className="text-sm text-blue-700">

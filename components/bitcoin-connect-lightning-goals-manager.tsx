@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { WalletConnect } from './wallet-connect'
 import { ClientOnly } from './client-only'
 import { LightningInvoiceQR } from './lightning-invoice-qr'
-import { CheckCircle, Smartphone } from 'lucide-react'
+import { CheckCircle, Smartphone, Zap } from 'lucide-react'
 import * as bolt11 from 'bolt11'
 import { toast } from 'sonner'
 
@@ -738,7 +738,7 @@ function BitcoinConnectLightningGoalsManagerInner({
                 </>
               ) : (
                 <>
-                  <span className="text-2xl">⚡</span>
+                  <Zap className="w-6 h-6" />
                   Create Stake Invoice
                 </>
               )}
@@ -817,7 +817,7 @@ function BitcoinConnectLightningGoalsManagerInner({
               {/* Primary: 1-Click Payment */}
               <div className="border-2 border-green-200 dark:border-green-800 rounded-lg p-6 bg-green-50 dark:bg-green-900/20">
                 <div className="text-center mb-4">
-                  <div className="text-5xl mb-3">⚡</div>
+                  <div className="mb-3"><Zap className="w-12 h-12 text-[#F7931A] mx-auto" /></div>
                   <h3 className="text-lg font-semibold text-green-700 dark:text-green-300 mb-2">
                     Pay with Connected Wallet
                   </h3>
@@ -832,7 +832,7 @@ function BitcoinConnectLightningGoalsManagerInner({
                   className="w-full py-4 bg-green-500 text-white rounded-lg font-medium text-lg
                            hover:bg-green-600 disabled:bg-gray-300 transition-colors"
                 >
-                  {loading ? 'Processing Payment...' : '⚡ Pay Now'}
+                  {loading ? 'Processing Payment...' : 'Pay Now'}
                 </button>
                 
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-3 text-center">

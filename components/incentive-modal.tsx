@@ -146,21 +146,21 @@ function LightningGoalsSummary({
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{goals.dailyReward}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Daily Reward (sats)</div>
+            <div className="bg-[#111] border border-zinc-800 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold font-mono text-[#F7931A]">{goals.dailyReward}</div>
+              <div className="text-sm text-zinc-500">Daily Reward (sats)</div>
             </div>
-            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{goals.currentBalance}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Current Balance (sats)</div>
+            <div className="bg-[#111] border border-zinc-800 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold font-mono text-emerald-400">{goals.currentBalance}</div>
+              <div className="text-sm text-zinc-500">Balance (sats)</div>
             </div>
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{goals.currentStreak || 0}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Day Streak</div>
+            <div className="bg-[#111] border border-zinc-800 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold font-mono text-zinc-100">{goals.currentStreak || 0}</div>
+              <div className="text-sm text-zinc-500">Day Streak</div>
             </div>
-            <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{goals.totalGoalsMet || 0}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Goals Met</div>
+            <div className="bg-[#111] border border-zinc-800 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold font-mono text-zinc-100">{goals.totalGoalsMet || 0}</div>
+              <div className="text-sm text-zinc-500">Goals Met</div>
             </div>
           </div>
 
@@ -205,16 +205,16 @@ function LightningGoalsSummary({
       ) : (
         /* History Tab */
         <div className="space-y-4">
-          <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Activity History</h3>
+          <div className="bg-[#111] border border-zinc-800 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4 text-zinc-100">Activity History</h3>
             {goals.history && goals.history.length > 0 ? (
               <div className="space-y-3">
                 {goals.history.slice(-10).reverse().map((day: any, index: number) => (
-                  <div key={index} className="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <div key={index} className="bg-[#0a0a0a] p-4 rounded-lg border border-zinc-800">
                     {/* Date Header */}
-                    <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-200 dark:border-gray-600">
-                      <span className="font-semibold text-gray-900 dark:text-gray-100">{day.date}</span>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
+                      <span className="font-semibold text-zinc-100">{day.date}</span>
+                      <span className="text-sm text-zinc-500">
                         {day.words} words
                       </span>
                     </div>
@@ -255,13 +255,13 @@ function LightningGoalsSummary({
                     {day.transactions && day.transactions.length > 0 && (
                       <div className="space-y-2 mt-3">
                         {day.transactions.map((tx: any, txIndex: number) => (
-                          <div key={txIndex} className="flex items-start gap-2 text-sm bg-gray-50 dark:bg-gray-800 p-2 rounded">
+                          <div key={txIndex} className="flex items-start gap-2 text-sm bg-[#111] p-2 rounded">
                             {tx.type === 'stake_created' && (
                               <>
                                 <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
                                 <div className="flex-1">
                                   <div className="font-medium text-blue-700 dark:text-blue-300">Stake Created</div>
-                                  <div className="text-xs text-gray-600 dark:text-gray-400">Deposited {tx.amount} sats</div>
+                                  <div className="text-xs text-zinc-500">Deposited <span className="font-mono">{tx.amount}</span> sats</div>
                                 </div>
                               </>
                             )}
@@ -270,7 +270,7 @@ function LightningGoalsSummary({
                                 <Plus className="w-4 h-4 text-purple-600 dark:text-purple-400 mt-0.5" />
                                 <div className="flex-1">
                                   <div className="font-medium text-purple-700 dark:text-purple-300">Balance Top-Up</div>
-                                  <div className="text-xs text-gray-600 dark:text-gray-400">Added {tx.amount} sats</div>
+                                  <div className="text-xs text-zinc-500">Added <span className="font-mono">{tx.amount}</span> sats</div>
                                 </div>
                               </>
                             )}
@@ -297,7 +297,7 @@ function LightningGoalsSummary({
                                 <Zap className="w-4 h-4 text-orange-600 dark:text-orange-400 mt-0.5" />
                                 <div className="flex-1">
                                   <div className="font-medium text-orange-700 dark:text-orange-300">Reward Paid</div>
-                                  <div className="text-xs text-gray-600 dark:text-gray-400">Sent {tx.amount} sats</div>
+                                  <div className="text-xs text-zinc-500">Sent <span className="font-mono">{tx.amount}</span> sats</div>
                                 </div>
                               </>
                             )}
@@ -308,8 +308,8 @@ function LightningGoalsSummary({
                                   <div className="font-medium text-blue-700 dark:text-blue-300">
                                     {tx.type === 'deposit' ? 'Deposit' : 'Refund'}
                                   </div>
-                                  <div className="text-xs text-gray-600 dark:text-gray-400">
-                                    {tx.type === 'deposit' ? '+' : '+'}{tx.amount} sats
+                                  <div className="text-xs text-zinc-500">
+                                    {tx.type === 'deposit' ? '+' : '+'}<span className="font-mono">{tx.amount}</span> sats
                                   </div>
                                 </div>
                               </>
@@ -354,14 +354,14 @@ function LightningGoalsSummary({
       {/* Cancel Stake Confirmation Popup */}
       {showCancelConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full">
+          <div className="bg-[#111] border border-zinc-800 p-6 rounded-lg max-w-md w-full">
             <div className="text-center">
               <div className="flex justify-center mb-4">
-                <AlertTriangle className="w-16 h-16 text-yellow-600" />
+                <AlertTriangle className="w-16 h-16 text-red-500" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Cancel Lightning Goal?</h3>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to cancel your current stake? You will not receive a refund of your {goals.currentBalance} sats balance.
+              <h3 className="text-lg font-semibold mb-2 text-zinc-100">Cancel Lightning Goal?</h3>
+              <p className="text-zinc-400 mb-6">
+                Are you sure you want to cancel your current stake? You will not receive a refund of your <span className="font-mono text-zinc-200">{goals.currentBalance}</span> sats balance.
               </p>
               <div className="flex gap-3">
                 <Button

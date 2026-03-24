@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { fetchIncentiveSettings, fetchTodayProgress, markRewardClaimed, recordTransaction, updateStakeBalance } from '@/lib/incentive-nostr'
 import { publishPayoutRecord } from '@/lib/incentive-payout'
+import { CheckCircle, Target } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
@@ -136,9 +137,9 @@ export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
       settings.tags.find((t: string[]) => t[0] === 'daily_word_goal')[1]
     )
     return (
-      <Card className="p-4 bg-gray-50">
-        <p className="text-sm">
-          Keep writing! {wordCount} / {dailyGoal} words
+      <Card className="p-4 bg-[#111] border-zinc-800">
+        <p className="text-sm text-zinc-300">
+          Keep writing! <span className="font-mono">{wordCount}</span> / <span className="font-mono">{dailyGoal}</span> words
         </p>
       </Card>
     )
@@ -146,18 +147,20 @@ export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
 
   if (status === 'claimed') {
     return (
-      <Card className="p-4 bg-green-50">
-        <p className="text-sm text-green-700">
-          ✅ Today's reward claimed!
+      <Card className="p-4 bg-emerald-500/10 border-emerald-500/20">
+        <p className="text-sm text-emerald-400 flex items-center gap-2">
+          <CheckCircle className="w-4 h-4" />
+          Today's reward claimed
         </p>
       </Card>
     )
   }
 
   return (
-    <Card className="p-4 bg-yellow-50">
-      <p className="text-sm font-semibold mb-2">
-        🎯 Goal achieved! Claim your reward:
+    <Card className="p-4 bg-[#F7931A]/10 border-[#F7931A]/20">
+      <p className="text-sm font-semibold mb-2 text-zinc-200 flex items-center gap-2">
+        <Target className="w-4 h-4 text-[#F7931A]" />
+        Goal achieved — claim your reward:
       </p>
       <Button 
         onClick={handleClaim}

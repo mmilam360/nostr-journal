@@ -372,14 +372,14 @@ export function TopUpBalance({ userPubkey, authData, currentBalance, onTopUpComp
           </div>
         )}
 
-        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded p-3">
+        <div className="bg-[#111] border border-zinc-800 rounded p-3">
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-gray-600 dark:text-gray-400">Current Balance:</span>
-            <span className="font-semibold text-gray-900 dark:text-gray-100">{currentBalance} sats</span>
+            <span className="text-zinc-500">Current Balance:</span>
+            <span className="font-semibold font-mono text-zinc-100">{currentBalance} sats</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600 dark:text-gray-400">New Balance:</span>
-            <span className="font-semibold text-green-600 dark:text-green-400">
+            <span className="text-zinc-500">New Balance:</span>
+            <span className="font-semibold font-mono text-emerald-400">
               {currentBalance + (parseInt(topUpAmount) || 0)} sats
             </span>
           </div>
@@ -517,13 +517,13 @@ function BitcoinConnectTopUp({
   }
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+    <div className="bg-[#111] p-6 rounded-lg border border-zinc-800">
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        <h3 className="text-lg font-semibold text-zinc-100 mb-2">
           Bitcoin Connect Payment
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Top up {amount} sats
+        <p className="text-sm text-zinc-400">
+          Top up <span className="font-mono">{amount}</span> sats
         </p>
       </div>
 
