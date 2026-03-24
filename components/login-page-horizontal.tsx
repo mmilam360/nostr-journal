@@ -856,11 +856,11 @@ export default function LoginPageHorizontal({ onLoginSuccess }: LoginPageHorizon
                                 <Copy className="h-4 w-4" />
                               </Button>
                             </div>
-                            <div className="bg-[#F7931A]/10 rounded-lg p-3 border border-[#F7931A]/20">
-                              <p className="text-xs text-zinc-200">
+                            <div className="bg-primary/10 rounded-lg p-3 border border-primary/20">
+                              <p className="text-xs text-foreground">
                                 <strong>Instructions:</strong>
                               </p>
-                              <ol className="text-xs text-zinc-300 space-y-1 list-decimal list-inside mt-1">
+                              <ol className="text-xs text-foreground space-y-1 list-decimal list-inside mt-1">
                                 <li>Scan QR code or copy connection string</li>
                                 <li>Open your signing app (nsec.app, Alby, etc.)</li>
                                 <li>Paste the connection string if scanning fails</li>
@@ -916,8 +916,8 @@ export default function LoginPageHorizontal({ onLoginSuccess }: LoginPageHorizon
                             <li>Paste it above and click Connect</li>
                             <li>Return to nsec.app to approve the connection</li>
                           </ol>
-                          <div className="mt-2 p-2 bg-[#F7931A]/10 rounded border border-[#F7931A]/20">
-                            <p className="text-xs text-zinc-300">
+                          <div className="mt-2 p-2 bg-primary/10 rounded border border-primary/20">
+                            <p className="text-xs text-foreground">
                               <strong>Tip:</strong> The bunker:// method is often more reliable than QR codes for initial connections.
                             </p>
                           </div>

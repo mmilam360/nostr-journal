@@ -156,21 +156,21 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
       <DialogContent className="sm:max-w-md max-w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Zap className="w-5 h-5 text-amber-500" />
+            <Zap className="w-5 h-5 text-primary" />
             Support Nostr Journal
           </DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
           {/* Supporting text */}
-          <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-lg border border-amber-200 dark:border-amber-900">
-            <p className="text-sm text-amber-900 dark:text-amber-100 mb-2">
+          <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+            <p className="text-sm text-foreground mb-2">
               <strong>This app is 100% funded by users like you.</strong>
             </p>
-            <p className="text-xs text-amber-800 dark:text-amber-200 mb-2">
+            <p className="text-xs text-muted-foreground mb-2">
               No ads. No tracking. Just one dev who believes in Nostr's mission and Value for Value principles.
             </p>
-            <p className="text-xs text-amber-800 dark:text-amber-200">
+            <p className="text-xs text-muted-foreground">
               Your zaps help build features like image uploads, calendar view, and full-text search while keeping Nostr Journal free and independent.
             </p>
           </div>
@@ -216,7 +216,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
             
             {qrDataURL && !isGenerating && !error && (
               <div className="flex flex-col items-center gap-4">
-                <div className="p-4 bg-white rounded-lg border-4 border-zinc-700">
+                <div className="p-4 bg-white rounded-lg border-4 border-border">
                   <img 
                     src={qrDataURL} 
                     alt={invoice ? "Lightning Invoice QR Code" : "Lightning Address QR Code"} 

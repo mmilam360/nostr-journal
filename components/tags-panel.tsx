@@ -15,7 +15,7 @@ interface TagsPanelProps {
 
 export default function TagsPanel({ tags, selectedTag, onSelectTag, pubkey, onLogout, onDonationClick }: TagsPanelProps) {
   return (
-    <div className="w-64 bg-[#0a0a0a] border-r border-border flex flex-col h-full">
+    <div className="w-64 bg-background border-r border-border flex flex-col h-full">
       {pubkey && onLogout && (
         <div className="border-b border-border">
           <UserMenu pubkey={pubkey} onLogout={onLogout} />

@@ -137,8 +137,8 @@ export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
       settings.tags.find((t: string[]) => t[0] === 'daily_word_goal')[1]
     )
     return (
-      <Card className="p-4 bg-[#111] border-zinc-800">
-        <p className="text-sm text-zinc-300">
+      <Card className="p-4 bg-card border-border">
+        <p className="text-sm text-foreground">
           Keep writing! <span className="font-mono">{wordCount}</span> / <span className="font-mono">{dailyGoal}</span> words
         </p>
       </Card>
@@ -157,9 +157,9 @@ export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
   }
 
   return (
-    <Card className="p-4 bg-[#F7931A]/10 border-[#F7931A]/20">
-      <p className="text-sm font-semibold mb-2 text-zinc-200 flex items-center gap-2">
-        <Target className="w-4 h-4 text-[#F7931A]" />
+    <Card className="p-4 bg-primary/10 border-primary/20">
+      <p className="text-sm font-semibold mb-2 text-foreground flex items-center gap-2">
+        <Target className="w-4 h-4 text-primary" />
         Goal achieved — claim your reward:
       </p>
       <Button 

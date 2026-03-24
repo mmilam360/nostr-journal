@@ -112,17 +112,17 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
               step > s
-                ? 'bg-[#F7931A] text-black'
+                ? 'bg-primary text-primary-foreground'
                 : step === s
-                  ? 'bg-[#F7931A]/20 text-[#F7931A] ring-1 ring-[#F7931A]/50'
-                  : 'bg-zinc-800 text-zinc-500'
+                  ? 'bg-primary/20 text-primary ring-1 ring-primary/50'
+                  : 'bg-secondary text-muted-foreground'
             }`}
           >
             {step > s ? <CheckCircle className="w-4 h-4" /> : s}
           </div>
           {s < 4 && (
             <div
-              className={`w-8 h-px ${step > s ? 'bg-[#F7931A]/40' : 'bg-zinc-800'}`}
+              className={`w-8 h-px ${step > s ? 'bg-primary/40' : 'bg-secondary'}`}
             />
           )}
         </div>
@@ -131,16 +131,16 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
   )
 
   return (
-    <Card className="p-8 bg-[#0a0a0a] border border-zinc-800/60 shadow-2xl shadow-black/40 rounded-2xl">
+    <Card className="p-8 bg-background border border-border/60 shadow-2xl shadow-black/40 rounded-2xl">
       <div className="flex items-center gap-3 mb-2">
-        <div className="p-2 bg-[#F7931A]/10 rounded-lg">
-          <Zap className="w-5 h-5 text-[#F7931A]" />
+        <div className="p-2 bg-primary/10 rounded-lg">
+          <Zap className="w-5 h-5 text-primary" />
         </div>
-        <h2 className="text-xl font-bold tracking-tight text-zinc-100">
+        <h2 className="text-xl font-bold tracking-tight text-foreground">
           Set Up Daily Writing Incentive
         </h2>
       </div>
-      <p className="text-sm text-zinc-500 mb-6">
+      <p className="text-sm text-muted-foreground mb-6">
         Stake sats to stay accountable. Hit your word goal, earn them back.
       </p>
 
@@ -148,10 +148,10 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
 
       {step === 1 && (
         <div className="space-y-5">
-          <div className="p-4 rounded-xl bg-[#111] border border-zinc-800/50">
+          <div className="p-4 rounded-xl bg-card border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Target className="w-4 h-4 text-[#F7931A]" />
-              <label className="text-sm font-medium text-zinc-200">
+              <Target className="w-4 h-4 text-primary" />
+              <label className="text-sm font-medium text-foreground">
                 Daily Word Goal
               </label>
             </div>
@@ -160,15 +160,15 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
               value={settings.dailyWordGoal}
               onChange={(e) => setSettings({...settings, dailyWordGoal: parseInt(e.target.value)})}
               placeholder="500"
-              className="bg-[#0a0a0a] border-zinc-700/50 text-zinc-100 font-mono text-lg h-12 focus:border-[#F7931A]/50 focus:ring-[#F7931A]/20"
+              className="bg-background border-border/50 text-foreground font-mono text-lg h-12 focus:border-primary/50 focus:ring-primary/20"
             />
-            <p className="text-xs text-zinc-500 mt-2">
+            <p className="text-xs text-muted-foreground mt-2">
               Words you need to write each day to earn your reward
             </p>
           </div>
           <Button
             onClick={() => setStep(2)}
-            className="w-full h-12 bg-[#F7931A] hover:bg-[#E8850F] text-black font-semibold text-sm tracking-wide transition-colors"
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm tracking-wide transition-colors"
           >
             Continue
             <ArrowRight className="w-4 h-4 ml-2" />
@@ -178,22 +178,22 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
 
       {step === 2 && (
         <div className="space-y-5">
-          <div className="p-4 rounded-xl bg-[#111] border border-zinc-800/50">
+          <div className="p-4 rounded-xl bg-card border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-[#F7931A]" />
-              <label className="text-sm font-medium text-zinc-200">
+              <Zap className="w-4 h-4 text-primary" />
+              <label className="text-sm font-medium text-foreground">
                 Daily Reward
               </label>
-              <span className="text-xs text-zinc-500 ml-auto">sats</span>
+              <span className="text-xs text-muted-foreground ml-auto">sats</span>
             </div>
             <Input
               type="number"
               value={settings.dailyRewardSats}
               onChange={(e) => setSettings({...settings, dailyRewardSats: parseInt(e.target.value)})}
               placeholder="500"
-              className="bg-[#0a0a0a] border-zinc-700/50 text-zinc-100 font-mono text-lg h-12 focus:border-[#F7931A]/50 focus:ring-[#F7931A]/20"
+              className="bg-background border-border/50 text-foreground font-mono text-lg h-12 focus:border-primary/50 focus:ring-primary/20"
             />
-            <p className="text-xs text-zinc-500 mt-2">
+            <p className="text-xs text-muted-foreground mt-2">
               Sats returned to you each day you hit your goal
             </p>
           </div>
@@ -201,13 +201,13 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
             <Button
               variant="outline"
               onClick={() => setStep(1)}
-              className="h-12 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
+              className="h-12 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
             >
               Back
             </Button>
             <Button
               onClick={() => setStep(3)}
-              className="flex-1 h-12 bg-[#F7931A] hover:bg-[#E8850F] text-black font-semibold text-sm tracking-wide transition-colors"
+              className="flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm tracking-wide transition-colors"
             >
               Continue
               <ArrowRight className="w-4 h-4 ml-2" />
@@ -218,10 +218,10 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
 
       {step === 3 && (
         <div className="space-y-5">
-          <div className="p-4 rounded-xl bg-[#111] border border-zinc-800/50">
+          <div className="p-4 rounded-xl bg-card border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Wallet className="w-4 h-4 text-[#F7931A]" />
-              <label className="text-sm font-medium text-zinc-200">
+              <Wallet className="w-4 h-4 text-primary" />
+              <label className="text-sm font-medium text-foreground">
                 Lightning Address
               </label>
             </div>
@@ -230,31 +230,31 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
               value={settings.lightningAddress}
               onChange={(e) => setSettings({...settings, lightningAddress: e.target.value})}
               placeholder="you@getalby.com"
-              className="bg-[#0a0a0a] border-zinc-700/50 text-zinc-100 h-12 focus:border-[#F7931A]/50 focus:ring-[#F7931A]/20"
+              className="bg-background border-border/50 text-foreground h-12 focus:border-primary/50 focus:ring-primary/20"
             />
-            <p className="text-xs text-zinc-500 mt-2">
+            <p className="text-xs text-muted-foreground mt-2">
               Where earned sats get delivered
             </p>
           </div>
 
-          <div className="p-4 rounded-xl bg-[#111] border border-zinc-800/50">
+          <div className="p-4 rounded-xl bg-card border border-border/50">
             <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-[#F7931A]" />
-              <label className="text-sm font-medium text-zinc-200">
+              <Zap className="w-4 h-4 text-primary" />
+              <label className="text-sm font-medium text-foreground">
                 Stake Amount
               </label>
-              <span className="text-xs text-zinc-500 ml-auto">sats</span>
+              <span className="text-xs text-muted-foreground ml-auto">sats</span>
             </div>
             <Input
               type="number"
               value={settings.stakeAmount}
               onChange={(e) => setSettings({...settings, stakeAmount: parseInt(e.target.value)})}
               placeholder="5000"
-              className="bg-[#0a0a0a] border-zinc-700/50 text-zinc-100 font-mono text-lg h-12 focus:border-[#F7931A]/50 focus:ring-[#F7931A]/20"
+              className="bg-background border-border/50 text-foreground font-mono text-lg h-12 focus:border-primary/50 focus:ring-primary/20"
             />
-            <div className="mt-3 p-3 rounded-lg bg-[#F7931A]/5 border border-[#F7931A]/10">
-              <p className="text-xs text-zinc-400">
-                Funds <span className="font-mono text-[#F7931A]">{Math.floor(settings.stakeAmount / settings.dailyRewardSats)}</span> days of rewards at <span className="font-mono text-zinc-300">{settings.dailyRewardSats}</span> sats/day
+            <div className="mt-3 p-3 rounded-lg bg-primary/5 border border-primary/10">
+              <p className="text-xs text-muted-foreground">
+                Funds <span className="font-mono text-primary">{Math.floor(settings.stakeAmount / settings.dailyRewardSats)}</span> days of rewards at <span className="font-mono text-foreground">{settings.dailyRewardSats}</span> sats/day
               </p>
             </div>
           </div>
@@ -263,14 +263,14 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
             <Button
               variant="outline"
               onClick={() => setStep(2)}
-              className="h-12 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
+              className="h-12 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
             >
               Back
             </Button>
             <Button
               onClick={handleCreateDeposit}
               disabled={loading}
-              className="flex-1 h-12 bg-[#F7931A] hover:bg-[#E8850F] text-black font-semibold text-sm tracking-wide transition-colors disabled:opacity-50"
+              className="flex-1 h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm tracking-wide transition-colors disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -291,20 +291,20 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
       {step === 4 && depositInvoice && (
         <div className="space-y-5">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-zinc-100 mb-1">
+            <h3 className="text-lg font-semibold text-foreground mb-1">
               Fund Your Stake
             </h3>
-            <p className="text-sm text-zinc-500">
-              <span className="font-mono text-[#F7931A] font-semibold">{settings.stakeAmount.toLocaleString()}</span>
-              <span className="text-zinc-500 mx-1.5">/</span>
-              <span className="font-mono text-zinc-300">{Math.floor(settings.stakeAmount / settings.dailyRewardSats)}</span> days of rewards
+            <p className="text-sm text-muted-foreground">
+              <span className="font-mono text-primary font-semibold">{settings.stakeAmount.toLocaleString()}</span>
+              <span className="text-muted-foreground mx-1.5">/</span>
+              <span className="font-mono text-foreground">{Math.floor(settings.stakeAmount / settings.dailyRewardSats)}</span> days of rewards
             </p>
           </div>
 
           {paymentStatus === 'idle' && (
             <Button
               onClick={handleWeblnPay}
-              className="w-full h-12 bg-[#F7931A] hover:bg-[#E8850F] text-black font-semibold text-sm tracking-wide transition-colors"
+              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm tracking-wide transition-colors"
             >
               <Zap className="w-4 h-4 mr-2" />
               Pay with Wallet Extension
@@ -313,8 +313,8 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
 
           {paymentStatus === 'paying' && (
             <div className="flex items-center justify-center gap-2 py-3">
-              <Loader2 className="w-4 h-4 text-[#F7931A] animate-spin" />
-              <p className="text-sm text-zinc-400">Waiting for payment confirmation...</p>
+              <Loader2 className="w-4 h-4 text-primary animate-spin" />
+              <p className="text-sm text-muted-foreground">Waiting for payment confirmation...</p>
             </div>
           )}
 
@@ -335,15 +335,15 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-zinc-800" />
+              <div className="w-full border-t border-border" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-[#0a0a0a] px-3 text-xs text-zinc-500">or scan with any Lightning wallet</span>
+              <span className="bg-background px-3 text-xs text-muted-foreground">or scan with any Lightning wallet</span>
             </div>
           </div>
 
           <div className="flex justify-center">
-            <div className="p-1 rounded-2xl bg-gradient-to-b from-[#F7931A]/20 to-[#F7931A]/5 border border-[#F7931A]/10">
+            <div className="p-1 rounded-2xl bg-gradient-to-b from-primary/20 to-primary/5 border border-primary/10">
               <div className="bg-white p-4 rounded-xl">
                 <QRCodeSVG value={`lightning:${depositInvoice}`} size={200} />
               </div>
@@ -356,7 +356,7 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
               navigator.clipboard.writeText(depositInvoice)
               toast.success('Invoice copied to clipboard')
             }}
-            className="w-full h-10 border-zinc-700/50 text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200 transition-colors"
+            className="w-full h-10 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:text-foreground transition-colors"
           >
             <Copy className="w-4 h-4 mr-2" />
             Copy Invoice
@@ -370,10 +370,10 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
             <CheckCircle className="w-8 h-8 text-emerald-400" />
           </div>
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-zinc-100 mb-1">
+            <h3 className="text-lg font-semibold text-foreground mb-1">
               Stake Active
             </h3>
-            <p className="text-sm text-zinc-500">
+            <p className="text-sm text-muted-foreground">
               Your writing incentive is live. Start writing to earn sats.
             </p>
           </div>

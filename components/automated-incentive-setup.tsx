@@ -498,7 +498,7 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-[#F7931A]" />
+            <Target className="w-5 h-5 text-primary" />
             Set Up Automated Lightning Goals
           </CardTitle>
         </CardHeader>
@@ -555,7 +555,7 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
           
           <div>
             <label className="text-sm font-medium">Lightning Address</label>
-            <p className="text-xs text-zinc-500 mb-2">Where your daily rewards will be sent</p>
+            <p className="text-xs text-muted-foreground mb-2">Where your daily rewards will be sent</p>
             <Input
               type="text"
               value={settings.lightningAddress}
@@ -575,20 +575,20 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
           </Button>
         ) : (
           <div className="space-y-4">
-            <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+            <div className="bg-primary/10 p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600" />
-                <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">Payment Required</span>
+                <AlertCircle className="w-5 h-5 text-primary" />
+                <span className="text-sm font-medium text-foreground">Payment Required</span>
               </div>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-4">
+              <p className="text-sm text-muted-foreground mb-4">
                 Pay this Lightning invoice to activate your goals:
               </p>
               
               {/* Modern QR Code Display */}
-              <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-6 rounded-xl border border-amber-200 dark:border-amber-800 mb-4">
+              <div className="bg-primary/5 p-6 rounded-xl border border-primary/20 mb-4">
                 <div className="flex flex-col items-center space-y-4">
                   {/* QR Code Container */}
-                  <div className="bg-white dark:bg-zinc-800 p-4 rounded-xl shadow-lg border border-amber-200 dark:border-amber-700">
+                  <div className="bg-white dark:bg-secondary p-4 rounded-xl shadow-lg border border-primary/20">
                     {qrCodeDataUrl && (
                       <img 
                         src={qrCodeDataUrl} 
@@ -600,10 +600,10 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
                   
                   {/* QR Code Description */}
                   <div className="text-center">
-                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
+                    <p className="text-sm font-medium text-foreground mb-1">
                       Scan with Lightning Wallet
                     </p>
-                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                    <p className="text-xs text-muted-foreground">
                       Use any Lightning wallet to pay this invoice
                     </p>
                   </div>
@@ -611,12 +611,12 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
               </div>
               
               {/* Invoice Text Container */}
-              <div className="bg-white dark:bg-zinc-800 p-4 rounded-xl border border-amber-200 dark:border-amber-700 mb-4">
+              <div className="bg-white dark:bg-secondary p-4 rounded-xl border border-primary/20 mb-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-amber-800 dark:text-amber-200">Lightning Invoice</span>
+                  <div className="w-2 h-2 bg-primary rounded-full"></div>
+                  <span className="text-sm font-medium text-foreground">Lightning Invoice</span>
                 </div>
-                <div className="bg-[#1a1a1a] p-3 rounded-lg border border-zinc-700 font-mono text-xs break-all text-zinc-300">
+                <div className="bg-secondary p-3 rounded-lg border border-border font-mono text-xs break-all text-foreground">
                   {depositInvoice}
                 </div>
               </div>
@@ -625,7 +625,7 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
               <div className="space-y-2">
                 <Button 
                   onClick={copyInvoice}
-                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 border-0"
                 >
                   <Copy className="w-4 h-4 mr-2" />
                   {showCopySuccess ? 'Copied!' : 'Copy Invoice'}
@@ -640,7 +640,7 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
                       setOriginalSettings(null)
                     }}
                     variant="outline"
-                    className="w-full border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                    className="w-full border-border text-foreground hover:bg-secondary"
                   >
                     <Zap className="w-4 h-4 mr-2" />
                     Generate Lightning Invoice (New)
@@ -651,12 +651,12 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
             </div>
             
             {/* Payment Status Indicator */}
-            <div className="bg-[#F7931A]/10 p-3 rounded-lg">
+            <div className="bg-primary/10 p-3 rounded-lg">
               <div className="flex items-center gap-2">
                 <div className="animate-spin">
-                  <Clock className="w-4 h-4 text-[#F7931A]" />
+                  <Clock className="w-4 h-4 text-primary" />
                 </div>
-                <span className="text-sm text-zinc-300">
+                <span className="text-sm text-foreground">
                   Waiting for payment... (checking every second)
                 </span>
               </div>
@@ -702,24 +702,24 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
         <Card className="max-w-md w-full p-6 relative animate-in zoom-in duration-300">
           <div className="flex flex-col items-center text-center space-y-4">
             {/* Warning Icon */}
-            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-10 h-10 text-orange-600" />
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+              <AlertCircle className="w-10 h-10 text-primary" />
             </div>
-            
+
             {/* Message */}
             <div>
-              <h2 className="text-2xl font-bold text-zinc-100">
+              <h2 className="text-2xl font-bold text-foreground">
                 Challenge Quit
               </h2>
-              <p className="text-zinc-400 mt-2">
+              <p className="text-muted-foreground mt-2">
                 Your stake has been forfeited. You can start a new challenge anytime.
               </p>
             </div>
-            
+
             {/* CTA Button */}
-            <Button 
+            <Button
               onClick={() => setShowQuitSuccess(false)}
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+              className="w-full bg-primary hover:bg-primary/90"
             >
               Start New Challenge →
             </Button>
@@ -740,10 +740,10 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
             
             {/* Error Message */}
             <div>
-              <h2 className="text-2xl font-bold text-zinc-100">
+              <h2 className="text-2xl font-bold text-foreground">
                 Error Quitting Challenge
               </h2>
-              <p className="text-zinc-400 mt-2">
+              <p className="text-muted-foreground mt-2">
                 Failed to quit challenge. Please try again.
               </p>
             </div>
@@ -751,7 +751,7 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
             {/* CTA Button */}
             <Button 
               onClick={() => setShowQuitError(false)}
-              className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
+              className="w-full bg-destructive hover:bg-destructive/90"
             >
               Try Again
             </Button>
@@ -769,8 +769,8 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
               <AlertCircle className="w-10 h-10 text-red-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-zinc-100">Invoice Creation Failed</h2>
-              <p className="text-zinc-400 mt-2">Failed to create stake invoice. Please try again.</p>
+              <h2 className="text-2xl font-bold text-foreground">Invoice Creation Failed</h2>
+              <p className="text-muted-foreground mt-2">Failed to create stake invoice. Please try again.</p>
             </div>
             <Button onClick={() => setShowInvoiceError(false)} className="w-full bg-red-600 hover:bg-red-700">
               Try Again
@@ -789,8 +789,8 @@ export function AutomatedIncentiveSetup({ userPubkey, authData, onPaymentSuccess
               <AlertCircle className="w-10 h-10 text-red-600" />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-zinc-100">Payment Check Failed</h2>
-              <p className="text-zinc-400 mt-2">Failed to check payment status. Please try again.</p>
+              <h2 className="text-2xl font-bold text-foreground">Payment Check Failed</h2>
+              <p className="text-muted-foreground mt-2">Failed to check payment status. Please try again.</p>
             </div>
             <Button onClick={() => setShowPaymentError(false)} className="w-full bg-red-600 hover:bg-red-700">
               Try Again

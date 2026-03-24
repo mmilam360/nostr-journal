@@ -443,11 +443,11 @@ export function LightningGoalsManager({
   if (loading) {
     console.log('[Manager] Showing loading screen')
     return (
-      <Card className="bg-[#111] border-zinc-800">
+      <Card className="bg-card border-border">
         <CardContent className="p-6">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7931A] mx-auto mb-4"></div>
-            <p className="text-zinc-300">Loading Lightning Goals...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-foreground">Loading Lightning Goals...</p>
           </div>
         </CardContent>
       </Card>
@@ -459,9 +459,9 @@ export function LightningGoalsManager({
       {screen === 'tracking' && goals && (
         <div className="space-y-4">
           {/* Progress Card */}
-          <Card className="bg-[#111] border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-zinc-100">Your Writing Goal</CardTitle>
+              <CardTitle className="text-foreground">Your Writing Goal</CardTitle>
             </CardHeader>
             <CardContent>
               {/* Progress */}
@@ -472,20 +472,20 @@ export function LightningGoalsManager({
 
                   return (
                     <>
-                      <div className="flex justify-between text-sm mb-2 text-zinc-300">
+                      <div className="flex justify-between text-sm mb-2 text-foreground">
                         <span>Progress (since stake)</span>
                         <span>{wordsSinceStake} / {goals.dailyWordGoal} words</span>
                       </div>
 
-                      <div className="w-full bg-zinc-800 rounded-full h-4">
+                      <div className="w-full bg-secondary rounded-full h-4">
                         <div
-                          className="h-4 rounded-full transition-all duration-500 bg-[#F7931A]"
+                          className="h-4 rounded-full transition-all duration-500 bg-primary"
                           style={{ width: `${progressPercent}%` }}
                         />
                       </div>
 
                       {goals.todayRewardSent && (
-                        <div className="mt-2 text-[#F7931A] text-sm flex items-center gap-1.5">
+                        <div className="mt-2 text-primary text-sm flex items-center gap-1.5">
                           <CheckCircle className="w-4 h-4" />
                           <span className="font-mono">{goals.todayRewardAmount} sats</span> earned today!
                         </div>
@@ -495,7 +495,7 @@ export function LightningGoalsManager({
                 })()}
 
                 {goals.todayGoalMet && !goals.todayRewardSent && (
-                  <div className="text-[#F7931A] text-sm mt-2 flex items-center gap-1.5">
+                  <div className="text-primary text-sm mt-2 flex items-center gap-1.5">
                     <Target className="w-4 h-4" />
                     Goal met! Waiting for reward...
                   </div>
@@ -504,12 +504,12 @@ export function LightningGoalsManager({
 
               {/* Balance */}
               <div className="mb-4">
-                <div className="text-sm text-zinc-400">Current Balance</div>
-                <div className="text-2xl font-bold text-zinc-100">
+                <div className="text-sm text-muted-foreground">Current Balance</div>
+                <div className="text-2xl font-bold text-foreground">
                   {isUpdatingBalance ? (
                     <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#F7931A]"></div>
-                      <span className="text-zinc-500">Updating...</span>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                      <span className="text-muted-foreground">Updating...</span>
                     </div>
                   ) : (
                     <span className="font-mono">{goals.currentBalance} sats</span>
@@ -520,21 +520,21 @@ export function LightningGoalsManager({
               {/* Stats */}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <div className="text-zinc-400">Streak</div>
-                  <div className="font-bold text-zinc-100">{goals.currentStreak} days</div>
+                  <div className="text-muted-foreground">Streak</div>
+                  <div className="font-bold text-foreground">{goals.currentStreak} days</div>
                 </div>
                 <div>
-                  <div className="text-zinc-400">Total Earned</div>
-                  <div className="font-bold text-zinc-100"><span className="font-mono">{goals.totalRewardsEarned} sats</span></div>
+                  <div className="text-muted-foreground">Total Earned</div>
+                  <div className="font-bold text-foreground"><span className="font-mono">{goals.totalRewardsEarned} sats</span></div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Lightning Address */}
-          <Card className="bg-[#111] border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-zinc-100">Lightning Address</CardTitle>
+              <CardTitle className="text-foreground">Lightning Address</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex gap-2">
@@ -543,26 +543,26 @@ export function LightningGoalsManager({
                   value={lightningAddress}
                   onChange={(e) => setLightningAddress(e.target.value)}
                   placeholder="your@lightning.address"
-                  className="flex-1 bg-[#0a0a0a] border-zinc-700 text-zinc-100 placeholder:text-zinc-500"
+                  className="flex-1 bg-background border-border text-foreground placeholder:text-muted-foreground"
                 />
                 <Button
                   onClick={handleUpdateLightningAddress}
                   disabled={!lightningAddress || lightningAddress === goals.lightningAddress}
-                  className="bg-[#F7931A] hover:bg-[#E8850F] text-white"
+                  className="bg-primary hover:bg-primary/90 text-white"
                 >
                   Update
                 </Button>
               </div>
-              <p className="text-xs text-zinc-500 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 Where daily rewards will be sent
               </p>
             </CardContent>
           </Card>
 
           {/* Actions */}
-          <Card className="bg-[#111] border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-zinc-100">Actions</CardTitle>
+              <CardTitle className="text-foreground">Actions</CardTitle>
             </CardHeader>
             <CardContent>
               <Button
@@ -604,19 +604,19 @@ export function LightningGoalsManager({
       )}
 
       {screen === 'setup' && (
-        <Card className="bg-[#111] border-zinc-800">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-zinc-100">Set Up Lightning Goals</CardTitle>
+            <CardTitle className="text-foreground">Set Up Lightning Goals</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-2 block text-zinc-300">Daily Word Goal</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Daily Word Goal</label>
               <Input
                 type="number"
                 value={dailyWordGoal}
                 onChange={(e) => setDailyWordGoal(e.target.value)}
                 placeholder="500"
-                className={`bg-[#0a0a0a] border-zinc-700 text-zinc-100 placeholder:text-zinc-500 ${hasAttemptedSubmit && validationErrors.dailyWordGoal ? 'border-red-500' : ''}`}
+                className={`bg-background border-border text-foreground placeholder:text-muted-foreground ${hasAttemptedSubmit && validationErrors.dailyWordGoal ? 'border-red-500' : ''}`}
               />
               {hasAttemptedSubmit && validationErrors.dailyWordGoal && (
                 <p className="text-xs text-red-500 mt-1">{validationErrors.dailyWordGoal}</p>
@@ -624,13 +624,13 @@ export function LightningGoalsManager({
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block text-zinc-300">Daily Reward (sats)</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Daily Reward (sats)</label>
               <Input
                 type="number"
                 value={dailyReward}
                 onChange={(e) => setDailyReward(e.target.value)}
                 placeholder="100"
-                className={`bg-[#0a0a0a] border-zinc-700 text-zinc-100 placeholder:text-zinc-500 ${hasAttemptedSubmit && validationErrors.dailyReward ? 'border-red-500' : ''}`}
+                className={`bg-background border-border text-foreground placeholder:text-muted-foreground ${hasAttemptedSubmit && validationErrors.dailyReward ? 'border-red-500' : ''}`}
               />
               {hasAttemptedSubmit && validationErrors.dailyReward && (
                 <p className="text-xs text-red-500 mt-1">{validationErrors.dailyReward}</p>
@@ -638,13 +638,13 @@ export function LightningGoalsManager({
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block text-zinc-300">Initial Deposit (sats)</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Initial Deposit (sats)</label>
               <Input
                 type="number"
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(e.target.value)}
                 placeholder="1000"
-                className={`bg-[#0a0a0a] border-zinc-700 text-zinc-100 placeholder:text-zinc-500 ${hasAttemptedSubmit && validationErrors.depositAmount ? 'border-red-500' : ''}`}
+                className={`bg-background border-border text-foreground placeholder:text-muted-foreground ${hasAttemptedSubmit && validationErrors.depositAmount ? 'border-red-500' : ''}`}
               />
               {hasAttemptedSubmit && validationErrors.depositAmount && (
                 <p className="text-xs text-red-500 mt-1">{validationErrors.depositAmount}</p>
@@ -652,18 +652,18 @@ export function LightningGoalsManager({
             </div>
 
             <div>
-              <label className="text-sm font-medium mb-2 block text-zinc-300">Lightning Address</label>
+              <label className="text-sm font-medium mb-2 block text-foreground">Lightning Address</label>
               <Input
                 type="text"
                 value={lightningAddress}
                 onChange={(e) => setLightningAddress(e.target.value)}
                 placeholder="your@lightning.address"
-                className={`bg-[#0a0a0a] border-zinc-700 text-zinc-100 placeholder:text-zinc-500 ${hasAttemptedSubmit && validationErrors.lightningAddress ? 'border-red-500' : ''}`}
+                className={`bg-background border-border text-foreground placeholder:text-muted-foreground ${hasAttemptedSubmit && validationErrors.lightningAddress ? 'border-red-500' : ''}`}
               />
               {hasAttemptedSubmit && validationErrors.lightningAddress && (
                 <p className="text-xs text-red-500 mt-1">{validationErrors.lightningAddress}</p>
               )}
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Where daily rewards will be sent
               </p>
             </div>
@@ -671,12 +671,12 @@ export function LightningGoalsManager({
             <Button
               onClick={handleCreateStake}
               disabled={loading || !isFormValid}
-              className="w-full bg-[#F7931A] hover:bg-[#E8850F] text-white"
+              className="w-full bg-primary hover:bg-primary/90 text-white"
             >
               {loading ? 'Creating...' : 'Generate Lightning Invoice'}
             </Button>
 
-            <div className="text-xs text-zinc-500">
+            <div className="text-xs text-muted-foreground">
               <p>You will earn <span className="font-mono">{dailyReward || 'X'} sats</span> each day you write {dailyWordGoal || 'X'}+ words</p>
               <p>Your deposit of <span className="font-mono">{depositAmount || 'X'} sats</span> will be used to pay rewards</p>
               <p>Cancelling forfeits your remaining balance</p>
@@ -688,17 +688,17 @@ export function LightningGoalsManager({
       {screen === 'invoice' && (
         <div className="space-y-4">
           {invoiceData ? (
-            <Card className="bg-[#111] border-zinc-800">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-zinc-100">Complete Your Payment</CardTitle>
+                <CardTitle className="text-foreground">Complete Your Payment</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* QR Code Display */}
                 {qrCodeDataUrl && (
-                  <div className="bg-[#1a1a1a] p-6 rounded-xl border border-zinc-700 mb-4">
+                  <div className="bg-secondary p-6 rounded-xl border border-border mb-4">
                     <div className="flex flex-col items-center space-y-4">
                       {/* QR Code Container */}
-                      <div className="bg-white p-4 rounded-xl shadow-lg border border-zinc-600">
+                      <div className="bg-white p-4 rounded-xl shadow-lg border border-border">
                         <img
                           src={qrCodeDataUrl}
                           alt="Lightning Invoice QR Code"
@@ -708,10 +708,10 @@ export function LightningGoalsManager({
 
                       {/* QR Code Description */}
                       <div className="text-center">
-                        <p className="text-sm font-medium text-zinc-200 mb-1">
+                        <p className="text-sm font-medium text-foreground mb-1">
                           Scan with Lightning Wallet
                         </p>
-                        <p className="text-xs text-zinc-400">
+                        <p className="text-xs text-muted-foreground">
                           Use any Lightning wallet to pay this invoice
                         </p>
                       </div>
@@ -720,12 +720,12 @@ export function LightningGoalsManager({
                 )}
 
                 {/* Invoice Text */}
-                <div className="bg-[#1a1a1a] p-4 rounded-xl border border-zinc-700 mb-4">
+                <div className="bg-secondary p-4 rounded-xl border border-border mb-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 bg-[#F7931A] rounded-full"></div>
-                    <span className="text-sm font-medium text-zinc-200">Lightning Invoice</span>
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <span className="text-sm font-medium text-foreground">Lightning Invoice</span>
                   </div>
-                  <div className="bg-[#0a0a0a] p-3 rounded-lg border border-zinc-800 font-mono text-xs break-all text-zinc-300">
+                  <div className="bg-background p-3 rounded-lg border border-border font-mono text-xs break-all text-foreground">
                     {invoiceData.invoice}
                   </div>
                 </div>
@@ -733,19 +733,19 @@ export function LightningGoalsManager({
                 {/* Copy Button */}
                 <Button
                   onClick={() => navigator.clipboard.writeText(invoiceData.invoice)}
-                  className="w-full bg-[#F7931A] hover:bg-[#E8850F] text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 border-0"
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 border-0"
                 >
                   <QrCode className="w-4 h-4 mr-2" />
                   Copy Invoice
                 </Button>
 
                 {/* Payment Status Indicator */}
-                <div className="bg-[#1a1a1a] border border-zinc-700 p-3 rounded-lg">
+                <div className="bg-secondary border border-border p-3 rounded-lg">
                   <div className="flex items-center gap-2">
                     <div className="animate-spin">
-                      <Clock className="w-4 h-4 text-[#F7931A]" />
+                      <Clock className="w-4 h-4 text-primary" />
                     </div>
-                    <span className="text-sm text-zinc-300">
+                    <span className="text-sm text-foreground">
                       Waiting for payment... (checking automatically every second)
                     </span>
                   </div>
@@ -753,25 +753,25 @@ export function LightningGoalsManager({
               </CardContent>
             </Card>
           ) : (
-            <Card className="bg-[#111] border-zinc-800">
+            <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-zinc-100">Payment Required</CardTitle>
+                <CardTitle className="text-foreground">Payment Required</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
-                  <div className="text-lg font-semibold mb-2 text-zinc-100">Pending Payment</div>
-                  <div className="text-sm text-zinc-400 mb-4">
+                  <div className="text-lg font-semibold mb-2 text-foreground">Pending Payment</div>
+                  <div className="text-sm text-muted-foreground mb-4">
                     You have a pending Lightning Goals stake that requires payment to activate.
                   </div>
                 </div>
 
-                <div className="bg-[#F7931A]/10 border border-[#F7931A]/30 rounded-lg p-4">
-                  <div className="text-sm text-[#F7931A]">
+                <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+                  <div className="text-sm text-primary">
                     <p className="font-medium flex items-center gap-1.5">
                       <AlertTriangle className="w-3.5 h-3.5" />
                       Incomplete Setup
                     </p>
-                    <p className="mt-1 text-zinc-400">
+                    <p className="mt-1 text-muted-foreground">
                       Your stake was created but payment was not completed.
                       The invoice data is missing.
                     </p>
@@ -793,19 +793,19 @@ export function LightningGoalsManager({
                       }
                     }}
                     variant="outline"
-                    className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                    className="flex-1 border-border text-foreground hover:bg-secondary"
                   >
                     Cancel & Start Over
                   </Button>
                   <Button
                     onClick={() => setScreen('setup')}
-                    className="flex-1 bg-[#F7931A] hover:bg-[#E8850F] text-white"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white"
                   >
                     Try Again
                   </Button>
                 </div>
 
-                <div className="text-xs text-zinc-500 text-center">
+                <div className="text-xs text-muted-foreground text-center">
                   <p>Cancel to start fresh with new settings</p>
                   <p>Try Again to return to setup</p>
                 </div>
@@ -817,11 +817,11 @@ export function LightningGoalsManager({
 
       {/* Fallback - should never reach here */}
       {screen !== 'setup' && screen !== 'tracking' && screen !== 'invoice' && (
-        <Card className="bg-[#111] border-zinc-800">
+        <Card className="bg-card border-border">
           <CardContent className="p-6">
             <div className="text-center">
               <p className="text-red-500">Unknown screen state: {screen}</p>
-              <Button onClick={() => setScreen('setup')} className="mt-2 bg-[#F7931A] hover:bg-[#E8850F] text-white">
+              <Button onClick={() => setScreen('setup')} className="mt-2 bg-primary hover:bg-primary/90 text-white">
                 Go to Setup
               </Button>
             </div>
@@ -832,7 +832,7 @@ export function LightningGoalsManager({
       {/* Cancel Confirmation Modal */}
       {showCancelConfirmation && goals && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md bg-[#111] border-zinc-800">
+          <Card className="w-full max-w-md bg-card border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-400">
                 <AlertTriangle className="w-5 h-5" />
@@ -845,10 +845,10 @@ export function LightningGoalsManager({
                   <AlertTriangle className="w-3.5 h-3.5" />
                   WARNING
                 </p>
-                <p className="text-zinc-300 text-sm">
+                <p className="text-foreground text-sm">
                   Your remaining balance of <strong className="font-mono">{goals.currentBalance} sats</strong> will be <strong>FORFEITED</strong> (not refunded).
                 </p>
-                <p className="text-zinc-500 text-xs mt-2">
+                <p className="text-muted-foreground text-xs mt-2">
                   This action cannot be undone.
                 </p>
               </div>
@@ -857,7 +857,7 @@ export function LightningGoalsManager({
                 <Button
                   onClick={() => setShowCancelConfirmation(false)}
                   variant="outline"
-                  className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                  className="flex-1 border-border text-foreground hover:bg-secondary"
                   disabled={isCancelling}
                 >
                   Cancel
@@ -886,7 +886,7 @@ export function LightningGoalsManager({
       {/* Cancel Success Modal */}
       {showCancelSuccess && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md bg-[#111] border-zinc-800">
+          <Card className="w-full max-w-md bg-card border-border">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-emerald-400">
                 <CheckCircle className="w-5 h-5" />
@@ -899,10 +899,10 @@ export function LightningGoalsManager({
                   <CheckCircle className="w-3.5 h-3.5" />
                   Complete
                 </p>
-                <p className="text-zinc-300 text-sm">
+                <p className="text-foreground text-sm">
                   <strong className="font-mono">{forfeitedAmount} sats</strong> forfeited.
                 </p>
-                <p className="text-zinc-500 text-xs mt-2">
+                <p className="text-muted-foreground text-xs mt-2">
                   You can create a new stake anytime.
                 </p>
               </div>
@@ -913,7 +913,7 @@ export function LightningGoalsManager({
                   setGoals(null)
                   setScreen('setup')
                 }}
-                className="w-full bg-[#F7931A] hover:bg-[#E8850F] text-white"
+                className="w-full bg-primary hover:bg-primary/90 text-white"
               >
                 Create New Stake
               </Button>

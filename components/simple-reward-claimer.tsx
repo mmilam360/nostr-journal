@@ -129,7 +129,7 @@ export function SimpleRewardClaimer({ userPubkey, wordCount, authData }: SimpleR
           </div>
           <div className="w-full bg-muted rounded-full h-2">
             <div 
-              className={`h-2 rounded-full transition-all ${goalMet ? 'bg-emerald-500' : 'bg-[#F7931A]'}`}
+              className={`h-2 rounded-full transition-all ${goalMet ? 'bg-emerald-500' : 'bg-primary'}`}
               style={{ width: `${progressPercent}%` }}
             />
           </div>

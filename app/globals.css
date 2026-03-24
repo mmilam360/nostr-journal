@@ -3,8 +3,8 @@
 
 /* Bitcoin Connect CSS Variables */
 :root {
-  --bc-color-brand: #F7931A;
-  --bc-color-brand-dark: #F7931A;
+  --bc-color-brand: #345DC5;
+  --bc-color-brand-dark: #345DC5;
   --bc-brand-mix: 100%;
   --bc-color-brand-button-text: #ffffff;
   --bc-color-brand-button-text-dark: #ffffff;
@@ -74,82 +74,82 @@ button {
   overflow-x: hidden;
 }
 
-/* Bitcoin-Native Dark Theme */
+/* Nostr Blue Dark Theme */
 :root {
-  /* Dark-first design — Bitcoin fintech aesthetic */
-  --background: 10 10 10;            /* #0A0A0A - Deep black */
-  --foreground: 244 244 245;         /* #F4F4F5 - zinc-100 */
-  --card: 17 17 17;                  /* #111111 - Card dark */
-  --card-foreground: 244 244 245;    /* #F4F4F5 */
-  --popover: 26 26 26;               /* #1A1A1A - Popover */
-  --popover-foreground: 244 244 245;
-  --primary: 247 147 26;             /* #F7931A - Bitcoin orange */
-  --primary-foreground: 10 10 10;    /* #0A0A0A - Dark text on orange */
-  --secondary: 26 26 26;             /* #1A1A1A */
-  --secondary-foreground: 161 161 170; /* #A1A1AA - zinc-400 */
-  --muted: 26 26 26;                 /* #1A1A1A */
-  --muted-foreground: 113 113 122;   /* #71717A - zinc-500 */
-  --accent: 247 147 26;              /* #F7931A - Bitcoin orange */
-  --accent-foreground: 10 10 10;
-  --destructive: 239 68 68;          /* #EF4444 - Red */
+  /* Dark-first design — Nostr blue aesthetic */
+  --background: 10 14 26;            /* #0A0E1A - deep navy-black */
+  --foreground: 226 232 240;         /* #E2E8F0 - slate-200 */
+  --card: 13 26 58;                  /* #0D1A3A - deep navy card */
+  --card-foreground: 226 232 240;
+  --popover: 13 26 58;
+  --popover-foreground: 226 232 240;
+  --primary: 52 93 197;              /* #345DC5 - Nostr blue */
+  --primary-foreground: 255 255 255;
+  --secondary: 21 38 82;             /* #152652 - darker navy */
+  --secondary-foreground: 148 163 184; /* slate-400 */
+  --muted: 21 38 82;
+  --muted-foreground: 100 116 139;   /* slate-500 */
+  --accent: 52 93 197;               /* #345DC5 */
+  --accent-foreground: 255 255 255;
+  --destructive: 239 68 68;
   --destructive-foreground: 255 255 255;
   --success: 34 197 94;              /* #22C55E - Green */
-  --warning: 247 147 26;             /* #F7931A - Bitcoin orange */
-  --border: 39 39 42;                /* #27272A - zinc-800 */
-  --input: 39 39 42;                 /* #27272A - zinc-800 */
-  --ring: 247 147 26;                /* #F7931A - Bitcoin orange */
-  --chart-1: 247 147 26;
+  --warning: 234 179 8;              /* yellow */
+  --border: 30 58 138;               /* #1E3A8A - blue-900 border */
+  --input: 21 38 82;
+  --ring: 52 93 197;
+  --chart-1: 52 93 197;
   --chart-2: 34 197 94;
-  --chart-3: 161 161 170;
-  --chart-4: 39 39 42;
-  --chart-5: 26 26 26;
+  --chart-3: 148 163 184;
+  --chart-4: 30 58 138;
+  --chart-5: 21 38 82;
   --radius: 0.5rem;
-  --sidebar: 10 10 10;
-  --sidebar-foreground: 244 244 245;
-  --sidebar-primary: 247 147 26;
-  --sidebar-primary-foreground: 10 10 10;
-  --sidebar-accent: 26 26 26;
-  --sidebar-accent-foreground: 244 244 245;
-  --sidebar-border: 39 39 42;
-  --sidebar-ring: 247 147 26;
+  --sidebar: 10 14 26;
+  --sidebar-foreground: 226 232 240;
+  --sidebar-primary: 52 93 197;
+  --sidebar-primary-foreground: 255 255 255;
+  --sidebar-accent: 21 38 82;
+  --sidebar-accent-foreground: 226 232 240;
+  --sidebar-border: 30 58 138;
+  --sidebar-ring: 52 93 197;
 }
 
-/* Light mode override — still dark-leaning */
+/* Light mode override */
 .light {
-  --background: 250 250 250;         /* #FAFAFA */
-  --foreground: 10 10 10;            /* #0A0A0A */
-  --card: 255 255 255;               /* #FFFFFF */
-  --card-foreground: 10 10 10;
+  --background: 248 250 252;         /* #F8FAFC - slate-50 */
+  --foreground: 15 23 42;            /* #0F172A - slate-900 */
+  --card: 255 255 255;
+  --card-foreground: 15 23 42;
   --popover: 255 255 255;
-  --popover-foreground: 10 10 10;
-  --primary: 247 147 26;             /* #F7931A - Bitcoin orange */
+  --popover-foreground: 15 23 42;
+  --primary: 52 93 197;              /* #345DC5 - same blue */
   --primary-foreground: 255 255 255;
-  --secondary: 244 244 245;          /* #F4F4F5 */
-  --secondary-foreground: 10 10 10;
-  --muted: 244 244 245;
-  --muted-foreground: 113 113 122;   /* #71717A */
-  --accent: 247 147 26;
+  --secondary: 232 238 254;          /* #E8EFFE - light blue tint */
+  --secondary-foreground: 15 23 42;
+  --muted: 241 245 249;              /* slate-100 */
+  --muted-foreground: 100 116 139;   /* slate-500 */
+  --accent: 52 93 197;
   --accent-foreground: 255 255 255;
   --destructive: 220 38 38;
   --destructive-foreground: 255 255 255;
   --success: 22 163 74;
-  --warning: 247 147 26;
-  --border: 228 228 231;             /* #E4E4E7 - zinc-200 */
-  --input: 228 228 231;
-  --ring: 247 147 26;
-  --chart-1: 247 147 26;
+  --warning: 202 138 4;
+  --border: 203 213 225;             /* slate-300 */
+  --input: 241 245 249;
+  --ring: 52 93 197;
+  --chart-1: 52 93 197;
   --chart-2: 34 197 94;
-  --chart-3: 161 161 170;
-  --chart-4: 228 228 231;
-  --chart-5: 244 244 245;
-  --sidebar: 250 250 250;
-  --sidebar-foreground: 10 10 10;
-  --sidebar-primary: 247 147 26;
+  --chart-3: 148 163 184;
+  --chart-4: 203 213 225;
+  --chart-5: 241 245 249;
+  --sidebar: 248 250 252;
+  --sidebar-foreground: 15 23 42;
+  --sidebar-primary: 52 93 197;
   --sidebar-primary-foreground: 255 255 255;
-  --sidebar-accent: 244 244 245;
-  --sidebar-accent-foreground: 10 10 10;
-  --sidebar-border: 228 228 231;
-  --sidebar-ring: 247 147 26;
+  --sidebar-accent: 232 238 254;
+  --sidebar-accent-foreground: 15 23 42;
+  --sidebar-border: 203 213 225;
+  --sidebar-ring: 52 93 197;
 }
 
 @theme inline {
@@ -362,7 +362,7 @@ button {
 }
 
 .status-syncing {
-  color: rgb(247, 147, 26); /* Bitcoin orange */
+  color: rgb(52, 93, 197); /* Nostr blue */
 }
 
 .status-error {

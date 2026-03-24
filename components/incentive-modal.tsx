@@ -69,16 +69,16 @@ function LightningGoalsSummary({
           <Zap className="w-12 h-12 text-emerald-400" />
         </div>
         <h2 className="text-2xl font-bold text-emerald-400">Active Lightning Goal</h2>
-        <p className="text-zinc-400">Write {goals.dailyWordGoal} words daily to earn rewards</p>
+        <p className="text-muted-foreground">Write {goals.dailyWordGoal} words daily to earn rewards</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-zinc-800">
+      <div className="flex border-b border-border">
         <button
           onClick={() => setActiveTab('progress')}
           className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${activeTab === 'progress'
-            ? 'border-b-2 border-[#F7931A] text-[#F7931A]'
-            : 'text-zinc-400 hover:text-zinc-200'
+            ? 'border-b-2 border-primary text-primary'
+            : 'text-muted-foreground hover:text-foreground'
             }`}
         >
           Progress
@@ -86,8 +86,8 @@ function LightningGoalsSummary({
         <button
           onClick={() => setActiveTab('history')}
           className={`flex-1 py-3 px-4 text-center font-medium transition-colors ${activeTab === 'history'
-            ? 'border-b-2 border-[#F7931A] text-[#F7931A]'
-            : 'text-zinc-400 hover:text-zinc-200'
+            ? 'border-b-2 border-primary text-primary'
+            : 'text-muted-foreground hover:text-foreground'
             }`}
         >
           History
@@ -98,19 +98,19 @@ function LightningGoalsSummary({
       {activeTab === 'progress' ? (
         <>
           {/* Progress Section */}
-          <div className="bg-[#1a1a1a] p-6 rounded-lg border border-zinc-800">
+          <div className="bg-secondary p-6 rounded-lg border border-border">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-zinc-100">Today's Progress</h3>
-              <span className="text-sm text-zinc-400">
+              <h3 className="text-lg font-semibold text-foreground">Today's Progress</h3>
+              <span className="text-sm text-muted-foreground">
                 {wordsSinceStake} / {goals.dailyWordGoal} words
               </span>
             </div>
 
-            <div className="w-full bg-zinc-800 rounded-full h-3 mb-4">
+            <div className="w-full bg-secondary rounded-full h-3 mb-4">
               <div
                 className={`h-3 rounded-full transition-all duration-500 ${wordsSinceStake >= goals.dailyWordGoal
                   ? 'bg-gradient-to-r from-emerald-500 to-emerald-600'
-                  : 'bg-gradient-to-r from-[#F7931A] to-[#E8850F]'
+                  : 'bg-primary'
                   }`}
                 style={{ width: `${progressPercentage}%` }}
               />
@@ -138,7 +138,7 @@ function LightningGoalsSummary({
                 )}
               </div>
             ) : (
-              <p className="text-center text-zinc-400">
+              <p className="text-center text-muted-foreground">
                 {wordsToGo} words to go
               </p>
             )}
@@ -146,21 +146,21 @@ function LightningGoalsSummary({
 
           {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-[#111] border border-zinc-800 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold font-mono text-[#F7931A]">{goals.dailyReward}</div>
-              <div className="text-sm text-zinc-500">Daily Reward (sats)</div>
+            <div className="bg-card border border-border p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold font-mono text-primary">{goals.dailyReward}</div>
+              <div className="text-sm text-muted-foreground">Daily Reward (sats)</div>
             </div>
-            <div className="bg-[#111] border border-zinc-800 p-4 rounded-lg text-center">
+            <div className="bg-card border border-border p-4 rounded-lg text-center">
               <div className="text-2xl font-bold font-mono text-emerald-400">{goals.currentBalance}</div>
-              <div className="text-sm text-zinc-500">Balance (sats)</div>
+              <div className="text-sm text-muted-foreground">Balance (sats)</div>
             </div>
-            <div className="bg-[#111] border border-zinc-800 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold font-mono text-zinc-100">{goals.currentStreak || 0}</div>
-              <div className="text-sm text-zinc-500">Day Streak</div>
+            <div className="bg-card border border-border p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold font-mono text-foreground">{goals.currentStreak || 0}</div>
+              <div className="text-sm text-muted-foreground">Day Streak</div>
             </div>
-            <div className="bg-[#111] border border-zinc-800 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold font-mono text-zinc-100">{goals.totalGoalsMet || 0}</div>
-              <div className="text-sm text-zinc-500">Goals Met</div>
+            <div className="bg-card border border-border p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold font-mono text-foreground">{goals.totalGoalsMet || 0}</div>
+              <div className="text-sm text-muted-foreground">Goals Met</div>
             </div>
           </div>
 
@@ -198,23 +198,23 @@ function LightningGoalsSummary({
             </Button>
           </div>
           {/* Lightning Address */}
-          <div className="text-center text-sm text-zinc-500">
+          <div className="text-center text-sm text-muted-foreground">
             <p>Rewards sent to: <span className="font-mono">{goals.lightningAddress}</span></p>
           </div>
         </>
       ) : (
         /* History Tab */
         <div className="space-y-4">
-          <div className="bg-[#111] border border-zinc-800 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold mb-4 text-zinc-100">Activity History</h3>
+          <div className="bg-card border border-border p-6 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4 text-foreground">Activity History</h3>
             {goals.history && goals.history.length > 0 ? (
               <div className="space-y-3">
                 {goals.history.slice(-10).reverse().map((day: any, index: number) => (
-                  <div key={index} className="bg-[#0a0a0a] p-4 rounded-lg border border-zinc-800">
+                  <div key={index} className="bg-background p-4 rounded-lg border border-border">
                     {/* Date Header */}
-                    <div className="flex justify-between items-center mb-3 pb-2 border-b border-zinc-800">
-                      <span className="font-semibold text-zinc-100">{day.date}</span>
-                      <span className="text-sm text-zinc-500">
+                    <div className="flex justify-between items-center mb-3 pb-2 border-b border-border">
+                      <span className="font-semibold text-foreground">{day.date}</span>
+                      <span className="text-sm text-muted-foreground">
                         {day.words} words
                       </span>
                     </div>
@@ -229,14 +229,14 @@ function LightningGoalsSummary({
                       ) : (
                         // Check if this is the stake creation day
                         day.transactions?.some((tx: any) => tx.type === 'stake_created') ? (
-                          <div className="flex items-center gap-1 text-[#F7931A] text-sm font-medium">
+                          <div className="flex items-center gap-1 text-primary text-sm font-medium">
                             <TrendingUp className="w-4 h-4" />
                             <span>New Goal Started</span>
                           </div>
                         ) : (
                           // Check if this is today (don't show "missed" for today)
                           day.isToday ? (
-                            <div className="flex items-center gap-1 text-[#F7931A] text-sm font-medium">
+                            <div className="flex items-center gap-1 text-primary text-sm font-medium">
                               <AlertTriangle className="w-4 h-4" />
                               <span>In Progress</span>
                             </div>
@@ -255,22 +255,22 @@ function LightningGoalsSummary({
                     {day.transactions && day.transactions.length > 0 && (
                       <div className="space-y-2 mt-3">
                         {day.transactions.map((tx: any, txIndex: number) => (
-                          <div key={txIndex} className="flex items-start gap-2 text-sm bg-[#111] p-2 rounded">
+                          <div key={txIndex} className="flex items-start gap-2 text-sm bg-card p-2 rounded">
                             {tx.type === 'stake_created' && (
                               <>
-                                <Lock className="w-4 h-4 text-[#F7931A] mt-0.5" />
+                                <Lock className="w-4 h-4 text-primary mt-0.5" />
                                 <div className="flex-1">
-                                  <div className="font-medium text-[#F7931A]">Stake Created</div>
-                                  <div className="text-xs text-zinc-500">Deposited <span className="font-mono">{tx.amount}</span> sats</div>
+                                  <div className="font-medium text-primary">Stake Created</div>
+                                  <div className="text-xs text-muted-foreground">Deposited <span className="font-mono">{tx.amount}</span> sats</div>
                                 </div>
                               </>
                             )}
                             {tx.type === 'top_up' && (
                               <>
-                                <Plus className="w-4 h-4 text-[#F7931A] mt-0.5" />
+                                <Plus className="w-4 h-4 text-primary mt-0.5" />
                                 <div className="flex-1">
-                                  <div className="font-medium text-[#F7931A]">Balance Top-Up</div>
-                                  <div className="text-xs text-zinc-500">Added <span className="font-mono">{tx.amount}</span> sats</div>
+                                  <div className="font-medium text-primary">Balance Top-Up</div>
+                                  <div className="text-xs text-muted-foreground">Added <span className="font-mono">{tx.amount}</span> sats</div>
                                 </div>
                               </>
                             )}
@@ -279,7 +279,7 @@ function LightningGoalsSummary({
                                 <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5" />
                                 <div className="flex-1">
                                   <div className="font-medium text-emerald-300">Goal Achieved</div>
-                                  <div className="text-xs text-zinc-400">{tx.description}</div>
+                                  <div className="text-xs text-muted-foreground">{tx.description}</div>
                                 </div>
                               </>
                             )}
@@ -288,27 +288,27 @@ function LightningGoalsSummary({
                                 <XCircle className="w-4 h-4 text-red-400 mt-0.5" />
                                 <div className="flex-1">
                                   <div className="font-medium text-red-400">Goal Missed</div>
-                                  <div className="text-xs text-zinc-400">{tx.description}</div>
+                                  <div className="text-xs text-muted-foreground">{tx.description}</div>
                                 </div>
                               </>
                             )}
                             {tx.type === 'payout' && (
                               <>
-                                <Zap className="w-4 h-4 text-[#F7931A] mt-0.5" />
+                                <Zap className="w-4 h-4 text-primary mt-0.5" />
                                 <div className="flex-1">
-                                  <div className="font-medium text-[#F7931A]">Reward Paid</div>
-                                  <div className="text-xs text-zinc-500">Sent <span className="font-mono">{tx.amount}</span> sats</div>
+                                  <div className="font-medium text-primary">Reward Paid</div>
+                                  <div className="text-xs text-muted-foreground">Sent <span className="font-mono">{tx.amount}</span> sats</div>
                                 </div>
                               </>
                             )}
                             {(tx.type === 'deposit' || tx.type === 'refund') && (
                               <>
-                                <CreditCard className="w-4 h-4 text-[#F7931A] mt-0.5" />
+                                <CreditCard className="w-4 h-4 text-primary mt-0.5" />
                                 <div className="flex-1">
-                                  <div className="font-medium text-[#F7931A]">
+                                  <div className="font-medium text-primary">
                                     {tx.type === 'deposit' ? 'Deposit' : 'Refund'}
                                   </div>
-                                  <div className="text-xs text-zinc-500">
+                                  <div className="text-xs text-muted-foreground">
                                     {tx.type === 'deposit' ? '+' : '+'}<span className="font-mono">{tx.amount}</span> sats
                                   </div>
                                 </div>
@@ -322,7 +322,7 @@ function LightningGoalsSummary({
                 ))}
               </div>
             ) : (
-              <p className="text-zinc-400 text-center py-4">No activity yet</p>
+              <p className="text-muted-foreground text-center py-4">No activity yet</p>
             )}
           </div>
 
@@ -345,7 +345,7 @@ function LightningGoalsSummary({
           </div>
 
           {/* Lightning Address */}
-          <div className="text-center text-sm text-zinc-500">
+          <div className="text-center text-sm text-muted-foreground">
             <p>Rewards sent to: <span className="font-mono">{goals.lightningAddress}</span></p>
           </div>
         </div>
@@ -354,14 +354,14 @@ function LightningGoalsSummary({
       {/* Cancel Stake Confirmation Popup */}
       {showCancelConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#111] border border-zinc-800 p-6 rounded-lg max-w-md w-full">
+          <div className="bg-card border border-border p-6 rounded-lg max-w-md w-full">
             <div className="text-center">
               <div className="flex justify-center mb-4">
                 <AlertTriangle className="w-16 h-16 text-red-500" />
               </div>
-              <h3 className="text-lg font-semibold mb-2 text-zinc-100">Cancel Lightning Goal?</h3>
-              <p className="text-zinc-400 mb-6">
-                Are you sure you want to cancel your current stake? You will not receive a refund of your <span className="font-mono text-zinc-200">{goals.currentBalance}</span> sats balance.
+              <h3 className="text-lg font-semibold mb-2 text-foreground">Cancel Lightning Goal?</h3>
+              <p className="text-muted-foreground mb-6">
+                Are you sure you want to cancel your current stake? You will not receive a refund of your <span className="font-mono text-foreground">{goals.currentBalance}</span> sats balance.
               </p>
               <div className="flex gap-3">
                 <Button
@@ -488,10 +488,10 @@ export function IncentiveModal({
         }
       }}
     >
-      <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-[#111] rounded-lg shadow-lg border border-zinc-800">
-        <div className="flex flex-row items-center justify-between p-6 border-b border-zinc-800">
-          <h2 className="flex items-center gap-2 text-xl font-semibold text-zinc-100">
-            <Zap className="w-6 h-6 text-[#F7931A]" />
+      <div className="max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-card rounded-lg shadow-lg border border-border">
+        <div className="flex flex-row items-center justify-between p-6 border-b border-border">
+          <h2 className="flex items-center gap-2 text-xl font-semibold text-foreground">
+            <Zap className="w-6 h-6 text-primary" />
             Lightning Goals
           </h2>
           <Button variant="ghost" size="sm" onClick={onClose}>
@@ -502,8 +502,8 @@ export function IncentiveModal({
         <div className="p-6">
           {loading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7931A] mx-auto mb-4"></div>
-              <p className="text-zinc-400">Loading Lightning Goals...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading Lightning Goals...</p>
             </div>
           ) : (() => {
             console.log('[IncentiveModal] 🔍 Conditional check:', {

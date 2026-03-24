@@ -60,7 +60,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess, state: 
       case "loading":
         return (
           <div className="text-center py-12">
-            <Loader2 className="w-16 h-16 text-[#F7931A] animate-spin mx-auto mb-6" />
+            <Loader2 className="w-16 h-16 text-primary animate-spin mx-auto mb-6" />
             <p className="text-white text-lg">Preparing camera...</p>
           </div>
         )
@@ -87,7 +87,7 @@ export default function QrScannerModal({ isOpen, onClose, onScanSuccess, state: 
               Nostr Journal needs camera access to scan the QR code. Please enable camera permissions in your browser's
               site settings and try again.
             </p>
-            <Button onClick={handleTryAgain} className="bg-[#F7931A] hover:bg-[#E8850F] text-white px-6 py-2">
+            <Button onClick={handleTryAgain} className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2">
               Try Again
             </Button>
           </div>

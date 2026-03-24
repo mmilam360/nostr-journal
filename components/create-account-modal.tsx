@@ -117,7 +117,7 @@ export default function CreateAccountModal({ onCreateAccount, onClose }: CreateA
             </Button>
             <Button
               onClick={handleCreateAccount}
-              className="flex-1 bg-[#F7931A] hover:bg-[#E8850F] text-white"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
               disabled={isCreating || !password || !confirmPassword}
             >
               {isCreating ? "Creating..." : "Create & Encrypt Account"}

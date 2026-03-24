@@ -10,10 +10,10 @@ import { toast } from 'sonner'
 const MainApp = dynamic(() => import("@/components/main-app").then(mod => ({ default: mod.MainApp })), {
   ssr: false,
   loading: () => (
-    <main className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+    <main className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7931A] mx-auto mb-4"></div>
-        <p className="text-zinc-500">Loading...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Loading...</p>
       </div>
     </main>
   )
@@ -228,10 +228,10 @@ export default function Home() {
 
   if (isCheckingSession) {
     return (
-      <main className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
+      <main className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7931A] mx-auto mb-4"></div>
-          <p className="text-zinc-500">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </main>
     )
@@ -239,7 +239,7 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-      <main className="min-h-screen bg-[#0a0a0a]">
+      <main className="min-h-screen bg-background">
         
         {isLoggedIn && authData ? (
           <MainApp authData={authData} onLogout={handleLogout} />

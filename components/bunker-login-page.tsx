@@ -75,7 +75,7 @@ export function BunkerLoginPage({ onLoginSuccess, onBack }: BunkerLoginPageProps
           </p>
           <Button
             onClick={onBack}
-            className="w-full bg-[#F7931A] hover:bg-[#E8850F]"
+            className="w-full bg-primary hover:bg-primary/90"
           >
             Back to Main Login
           </Button>

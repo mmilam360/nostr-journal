@@ -198,7 +198,7 @@ export default function ProfilePage({ authData, onClose, onLightningAddressUpdat
         <div className="p-6 space-y-6">
           {isLoading ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7931A] mx-auto mb-4"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-slate-400">Loading profile...</p>
             </div>
           ) : (
@@ -291,7 +291,7 @@ export default function ProfilePage({ authData, onClose, onLightningAddressUpdat
                         setLightningAddress(e.target.value)
                       }}
                       placeholder="your@lightning.address"
-                      className="flex-1 bg-zinc-800 border-zinc-700 text-zinc-100"
+                      className="flex-1 bg-secondary border-border text-foreground"
                     />
                     <Button
                       onClick={handleSaveLightningAddress}
@@ -300,7 +300,7 @@ export default function ProfilePage({ authData, onClose, onLightningAddressUpdat
                       size="sm"
                       className={saveSuccess
                         ? "border-emerald-500 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20"
-                        : "border-[#F7931A] text-[#F7931A] hover:bg-[#F7931A]/10"
+                        : "border-primary text-primary hover:bg-primary/10"
                       }
                     >
                       {isSaving ? (
@@ -312,10 +312,10 @@ export default function ProfilePage({ authData, onClose, onLightningAddressUpdat
                       )}
                     </Button>
                   </div>
-                  <p className="text-xs text-zinc-400 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Where Lightning rewards will be sent. This updates your Nostr profile.
                   </p>
-                  <p className="text-xs text-zinc-500 mt-1 font-bold">
+                  <p className="text-xs text-muted-foreground mt-1 font-bold">
                     Current value: {lightningAddress || 'empty'}
                   </p>
                 </div>

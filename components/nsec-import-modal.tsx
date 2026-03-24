@@ -230,7 +230,7 @@ export default function NsecImportModal({ onImport, onClose }: NsecImportModalPr
               </Button>
               <Button
                 onClick={handleImport}
-                className="flex-1 bg-[#F7931A] hover:bg-[#E8850F] text-white"
+                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                 disabled={isImporting || !nsec || !password || !confirmPassword}
               >
                 {isImporting ? "Importing..." : "Import Account"}

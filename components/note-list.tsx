@@ -40,11 +40,11 @@ export default function NoteList({ notes, selectedNote, onSelectNote, onCreateNo
     }
     // If note was fetched from relays but has no eventId, something is wrong
     else if (note.fetchedFromRelays) {
-      return <AlertCircle className="w-3 h-3 text-orange-500" title="Fetched from relays but no event ID" />
+      return <AlertCircle className="w-3 h-3 text-primary" title="Fetched from relays but no event ID" />
     }
     // Otherwise it's local only
     else {
-      return <CloudOff className="w-3 h-3 text-zinc-500" title="Local only" />
+      return <CloudOff className="w-3 h-3 text-muted-foreground" title="Local only" />
     }
   }
 
@@ -66,7 +66,7 @@ export default function NoteList({ notes, selectedNote, onSelectNote, onCreateNo
 
 
   return (
-    <div className="w-full md:w-80 bg-[#0a0a0a] flex flex-col h-full border-r border-zinc-800">
+    <div className="w-full md:w-80 bg-background flex flex-col h-full border-r border-border">
       <div className="p-4 border-b border-border">
         <div className="relative mb-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />

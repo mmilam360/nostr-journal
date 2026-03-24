@@ -130,8 +130,8 @@ function WalletConnectInner() {
   if (isLoading) {
     return (
       <div className="text-center py-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#F7931A] mx-auto mb-2"></div>
-        <p className="text-sm text-zinc-400">Loading wallet connection...</p>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+        <p className="text-sm text-muted-foreground">Loading wallet connection...</p>
       </div>
     )
   }
@@ -140,12 +140,12 @@ function WalletConnectInner() {
     <div className="flex flex-col gap-2">
       {!isConnected ? (
         <div className="text-center">
-          <p className="mb-3 text-sm text-zinc-400">
+          <p className="mb-3 text-sm text-muted-foreground">
             Connect your Lightning wallet to deposit stake
           </p>
           <button
             onClick={handleConnect}
-            className="w-full py-3 bg-[#F7931A] hover:bg-[#E8850F] text-black rounded font-medium transition-colors"
+            className="w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded font-medium transition-colors"
           >
             Connect Lightning Wallet
           </button>
@@ -155,14 +155,14 @@ function WalletConnectInner() {
           <div className="flex items-center gap-2">
             <span className="text-emerald-400 font-medium flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Wallet Connected</span>
             {walletInfo && (
-              <span className="text-xs text-zinc-500">
+              <span className="text-xs text-muted-foreground">
                 {walletInfo.node?.alias || 'Lightning Wallet'}
               </span>
             )}
           </div>
           <button
             onClick={handleDisconnect}
-            className="text-xs text-zinc-500 hover:text-zinc-300"
+            className="text-xs text-muted-foreground hover:text-foreground"
           >
             Change Wallet
           </button>

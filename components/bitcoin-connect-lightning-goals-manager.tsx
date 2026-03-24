@@ -628,8 +628,8 @@ function BitcoinConnectLightningGoalsManagerInner({
           )}
           {/* Optional wallet connection */}
           {!isConnected && (
-            <div className="mb-4 p-3 bg-[#F7931A]/10 rounded-lg border border-[#F7931A]/20">
-              <p className="text-sm text-zinc-200 mb-2">
+            <div className="mb-4 p-3 bg-primary/10 rounded-lg border border-primary/20">
+              <p className="text-sm text-foreground mb-2">
                 Optional: Connect a wallet for 1-click payments
               </p>
               <WalletConnect />
@@ -637,8 +637,8 @@ function BitcoinConnectLightningGoalsManagerInner({
           )}
           
           {/* Consolidated Goal Setup Form */}
-          <div className="bg-[#1a1a1a] rounded-lg p-6 border border-zinc-800">
-            <h2 className="text-xl font-bold mb-6 text-center text-zinc-100">Create Your Writing Goal</h2>
+          <div className="bg-secondary rounded-lg p-6 border border-border">
+            <h2 className="text-xl font-bold mb-6 text-center text-foreground">Create Your Writing Goal</h2>
             
             <div className="space-y-4">
               <div>
@@ -649,11 +649,11 @@ function BitcoinConnectLightningGoalsManagerInner({
                   type="number"
                   value={goalWords || ''}
                   onChange={(e) => setGoalWords(e.target.value === '' ? 0 : Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-zinc-700 rounded bg-zinc-800 text-zinc-100 focus:border-[#F7931A]/50 focus:ring-1 focus:ring-[#F7931A]/20 focus:outline-none"
+                  className="w-full px-3 py-2 border border-border rounded bg-secondary text-foreground focus:border-primary/50 focus:ring-1 focus:ring-primary/20 focus:outline-none"
                   min="100"
                   step="50"
                 />
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   How many words you need to write each day
                 </p>
               </div>
@@ -666,11 +666,11 @@ function BitcoinConnectLightningGoalsManagerInner({
                   type="number"
                   value={dailyReward || ''}
                   onChange={(e) => setDailyReward(e.target.value === '' ? 0 : Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-zinc-700 rounded bg-zinc-800 text-zinc-100 focus:border-[#F7931A]/50 focus:ring-1 focus:ring-[#F7931A]/20 focus:outline-none"
+                  className="w-full px-3 py-2 border border-border rounded bg-secondary text-foreground focus:border-primary/50 focus:ring-1 focus:ring-primary/20 focus:outline-none"
                   min="1"
                   step="1"
                 />
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Reward you'll earn when you reach your daily goal
                 </p>
               </div>
@@ -683,11 +683,11 @@ function BitcoinConnectLightningGoalsManagerInner({
                   type="number"
                   value={stakeAmount || ''}
                   onChange={(e) => setStakeAmount(e.target.value === '' ? 0 : Number(e.target.value))}
-                  className="w-full px-3 py-2 border border-zinc-700 rounded bg-zinc-800 text-zinc-100 focus:border-[#F7931A]/50 focus:ring-1 focus:ring-[#F7931A]/20 focus:outline-none"
+                  className="w-full px-3 py-2 border border-border rounded bg-secondary text-foreground focus:border-primary/50 focus:ring-1 focus:ring-primary/20 focus:outline-none"
                   min="10"
                   step="10"
                 />
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Balance you'd like to load to your account
                 </p>
               </div>
@@ -700,14 +700,14 @@ function BitcoinConnectLightningGoalsManagerInner({
                   type="text"
                   value={lightningAddress}
                   onChange={(e) => setLightningAddress(e.target.value)}
-                  className="w-full px-3 py-2 border border-zinc-700 rounded bg-zinc-800 text-zinc-100 focus:border-[#F7931A]/50 focus:ring-1 focus:ring-[#F7931A]/20 focus:outline-none"
+                  className="w-full px-3 py-2 border border-border rounded bg-secondary text-foreground focus:border-primary/50 focus:ring-1 focus:ring-primary/20 focus:outline-none"
                   placeholder="your@lightning.address"
                 />
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Where rewards will be sent (auto-filled from your wallet or profile)
                 </p>
                 {!lightningAddress && (
-                  <p className="text-xs text-amber-500 mt-1">
+                  <p className="text-xs text-primary mt-1">
                     No Lightning address found in wallet. Please enter one manually.
                   </p>
                 )}
@@ -716,7 +716,7 @@ function BitcoinConnectLightningGoalsManagerInner({
           </div>
           
           {/* Primary Payment Button - Default to Bitcoin Connect */}
-          <div className="pt-4 border-t border-zinc-800">
+          <div className="pt-4 border-t border-border">
             <button
               onClick={async () => {
                 if (!isConnected) {
@@ -727,8 +727,8 @@ function BitcoinConnectLightningGoalsManagerInner({
                 await createDepositInvoice()
               }}
               disabled={loading || !lightningAddress || dailyReward <= 0 || stakeAmount <= 0}
-              className="w-full py-4 bg-[#F7931A] text-black rounded-lg font-medium text-lg
-                       hover:bg-[#E8850F] disabled:bg-zinc-700 disabled:text-zinc-500 transition-colors
+              className="w-full py-4 bg-primary text-primary-foreground rounded-lg font-medium text-lg
+                       hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground transition-colors
                        flex items-center justify-center gap-2"
             >
               {loading ? (
@@ -744,7 +744,7 @@ function BitcoinConnectLightningGoalsManagerInner({
               )}
             </button>
             
-            <p className="text-xs text-zinc-500 mt-2 text-center">
+            <p className="text-xs text-muted-foreground mt-2 text-center">
               Pay instantly with your connected Bitcoin wallet
             </p>
             
@@ -756,10 +756,10 @@ function BitcoinConnectLightningGoalsManagerInner({
                   await createDepositInvoice()
                 }}
                 disabled={loading || !lightningAddress || dailyReward <= 0 || stakeAmount <= 0}
-                className="w-full py-4 bg-zinc-800 hover:bg-zinc-700
-                         disabled:bg-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed
-                         text-zinc-200 rounded-lg font-medium text-lg transition-all duration-200
-                         flex items-center justify-center gap-2 border border-zinc-700"
+                className="w-full py-4 bg-secondary hover:bg-muted
+                         disabled:bg-secondary disabled:text-muted-foreground disabled:cursor-not-allowed
+                         text-foreground rounded-lg font-medium text-lg transition-all duration-200
+                         flex items-center justify-center gap-2 border border-border"
               >
                 {loading ? (
                   <>
@@ -774,7 +774,7 @@ function BitcoinConnectLightningGoalsManagerInner({
                 )}
               </button>
               
-              <div className="mt-3 text-xs text-zinc-500 text-center">
+              <div className="mt-3 text-xs text-muted-foreground text-center">
                 <p>Scan with any Lightning wallet to pay instantly</p>
               </div>
             </div>
@@ -815,13 +815,13 @@ function BitcoinConnectLightningGoalsManagerInner({
             // CONNECT WALLET FLOW: Show 1-click payment prominently
             <>
               {/* Primary: 1-Click Payment */}
-              <div className="border border-zinc-800 rounded-lg p-6 bg-[#1a1a1a]">
+              <div className="border border-border rounded-lg p-6 bg-secondary">
                 <div className="text-center mb-4">
-                  <div className="mb-3"><Zap className="w-12 h-12 text-[#F7931A] mx-auto" /></div>
-                  <h3 className="text-lg font-semibold text-zinc-100 mb-2">
+                  <div className="mb-3"><Zap className="w-12 h-12 text-primary mx-auto" /></div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
                     Pay with Connected Wallet
                   </h3>
-                  <p className="text-3xl font-bold font-mono text-[#F7931A] mb-3">
+                  <p className="text-3xl font-bold font-mono text-primary mb-3">
                     {invoiceData.amount} sats
                   </p>
                 </div>
@@ -829,24 +829,24 @@ function BitcoinConnectLightningGoalsManagerInner({
                 <button
                   onClick={payInvoice}
                   disabled={loading}
-                  className="w-full py-4 bg-[#F7931A] text-black rounded-lg font-medium text-lg
-                           hover:bg-[#E8850F] disabled:bg-zinc-700 disabled:text-zinc-500 transition-colors"
+                  className="w-full py-4 bg-primary text-primary-foreground rounded-lg font-medium text-lg
+                           hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground transition-colors"
                 >
                   {loading ? 'Processing Payment...' : 'Pay Now'}
                 </button>
                 
-                <p className="text-xs text-zinc-400 mt-3 text-center">
+                <p className="text-xs text-muted-foreground mt-3 text-center">
                   Instant 1-click payment from your connected wallet
                 </p>
               </div>
-              
+
               {/* Secondary: QR Code Alternative */}
-              <details className="border border-zinc-800 rounded-lg bg-[#1a1a1a]">
-                <summary className="p-4 cursor-pointer text-sm font-medium text-zinc-400 hover:text-zinc-200">
+              <details className="border border-border rounded-lg bg-secondary">
+                <summary className="p-4 cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
                   Or scan QR code with another wallet
                 </summary>
-                <div className="p-4 border-t border-zinc-800">
-                  <LightningInvoiceQR 
+                <div className="p-4 border-t border-border">
+                  <LightningInvoiceQR
                     invoice={invoiceData.invoice}
                     amount={invoiceData.amount}
                   />
@@ -857,19 +857,19 @@ function BitcoinConnectLightningGoalsManagerInner({
             // GENERATE INVOICE FLOW: Show QR code prominently - Top-Up Style Design
             <>
               {/* Primary: QR Code */}
-              <div className="bg-[#1a1a1a] p-6 rounded-lg border border-zinc-800">
+              <div className="bg-secondary p-6 rounded-lg border border-border">
                 <div className="text-center mb-4">
-                  <h3 className="text-lg font-semibold text-zinc-100 mb-2">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
                     Stake Payment
                   </h3>
-                  <p className="text-sm text-zinc-400">
+                  <p className="text-sm text-muted-foreground">
                     {loading ? 'Waiting for payment...' : 'Scan QR code or copy invoice to pay'}
                   </p>
                 </div>
 
                 {/* QR Code */}
                 <div className="flex justify-center mb-4">
-                  <div className="bg-white p-4 rounded-lg border-2 border-zinc-700">
+                  <div className="bg-white p-4 rounded-lg border-2 border-border">
                     <LightningInvoiceQR 
                       invoice={invoiceData.invoice}
                       amount={invoiceData.amount}
@@ -879,10 +879,10 @@ function BitcoinConnectLightningGoalsManagerInner({
                 
                 {/* Payment verification for QR code payments */}
                 {paymentMethod === 'invoice' && loading && (
-                  <div className="bg-[#F7931A]/10 border border-[#F7931A]/20 rounded p-3 text-sm text-zinc-200 mb-4 flex items-center justify-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#F7931A]"></div>
+                  <div className="bg-primary/10 border border-primary/20 rounded p-3 text-sm text-foreground mb-4 flex items-center justify-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                     Checking for payment...
-                    <div className="text-xs text-zinc-400 mt-1">
+                    <div className="text-xs text-muted-foreground mt-1">
                       Checking every 3 seconds for up to 3 minutes
                     </div>
                   </div>
@@ -890,20 +890,20 @@ function BitcoinConnectLightningGoalsManagerInner({
               </div>
               
               {/* Secondary: Connect Wallet Alternative */}
-              <details className="border border-zinc-800 rounded-lg bg-[#1a1a1a]">
-                <summary className="p-4 cursor-pointer text-sm font-medium text-zinc-400 hover:text-zinc-200">
+              <details className="border border-border rounded-lg bg-secondary">
+                <summary className="p-4 cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
                   Or connect a wallet for 1-click payment
                 </summary>
-                <div className="p-4 border-t border-zinc-800 text-center">
-                  <p className="text-sm text-zinc-400 mb-3">
+                <div className="p-4 border-t border-border text-center">
+                  <p className="text-sm text-muted-foreground mb-3">
                     Connect a WebLN-compatible wallet to pay instantly
                   </p>
                   <WalletConnect />
                   <button
                     onClick={payInvoice}
                     disabled={loading || !isConnected}
-                    className="w-full mt-3 py-3 bg-[#F7931A] text-black rounded-lg font-medium
-                             hover:bg-[#E8850F] disabled:bg-zinc-700 disabled:text-zinc-500 transition-colors"
+                    className="w-full mt-3 py-3 bg-primary text-primary-foreground rounded-lg font-medium
+                             hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground transition-colors"
                   >
                     {loading ? 'Processing...' : 'Pay with Connected Wallet'}
                   </button>
@@ -914,18 +914,18 @@ function BitcoinConnectLightningGoalsManagerInner({
           
           {/* Payment Status (shown for both methods) */}
           {loading && (
-            <div className="text-center p-4 bg-[#F7931A]/10 rounded-lg border border-[#F7931A]/20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7931A] mx-auto mb-3"></div>
-              <p className="text-sm font-medium text-zinc-200 mb-2">
+            <div className="text-center p-4 bg-primary/10 rounded-lg border border-primary/20">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
+              <p className="text-sm font-medium text-foreground mb-2">
                 Waiting for Payment...
               </p>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-muted-foreground">
                 Pay the invoice above from any Lightning wallet
               </p>
-              <p className="text-xs text-zinc-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Checking automatically every 3 seconds
               </p>
-              <p className="text-xs text-zinc-500 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 This usually takes 5-30 seconds after you pay
               </p>
             </div>
@@ -940,7 +940,7 @@ function BitcoinConnectLightningGoalsManagerInner({
                    setInvoiceData(null)
                    setVerificationStarted(false)
                  }}
-                 className="w-full py-2 text-sm text-zinc-500 hover:text-zinc-200"
+                 className="w-full py-2 text-sm text-muted-foreground hover:text-foreground"
                >
                  ← Back to setup
                </button>
@@ -952,13 +952,13 @@ function BitcoinConnectLightningGoalsManagerInner({
         <div className="space-y-6">
           <div className="text-center space-y-4">
             <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#F7931A]"></div>
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary"></div>
             </div>
-            <h2 className="text-xl font-bold text-zinc-100">Verifying Payment</h2>
-            <p className="text-zinc-300">
+            <h2 className="text-xl font-bold text-foreground">Verifying Payment</h2>
+            <p className="text-foreground">
               Please wait while we verify your payment...
             </p>
-            <p className="text-sm text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               This may take up to 2 minutes
             </p>
           </div>
@@ -972,8 +972,8 @@ function BitcoinConnectLightningGoalsManagerInner({
             <div className="flex justify-center">
               <CheckCircle className="w-16 h-16 text-green-600" />
             </div>
-            <h2 className="text-xl font-bold text-zinc-100">Stake Active!</h2>
-            <p className="text-zinc-400">
+            <h2 className="text-xl font-bold text-foreground">Stake Active!</h2>
+            <p className="text-muted-foreground">
               Write {goalWords} words today to earn your reward
             </p>
           </div>

@@ -115,7 +115,7 @@ export function SimpleIncentiveSetup({ userPubkey, authData }: SimpleIncentiveSe
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-[#F7931A]" />
+          <Target className="w-5 h-5 text-primary" />
           Set Up Your Daily Goal
         </CardTitle>
       </CardHeader>

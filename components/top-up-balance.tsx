@@ -239,12 +239,12 @@ export function TopUpBalance({ userPubkey, authData, currentBalance, onTopUpComp
   // Show QR code payment screen
   if (paymentMethod === 'invoice' && invoiceData) {
     return (
-      <div className="bg-[#1a1a1a] p-6 rounded-lg border border-zinc-800">
+      <div className="bg-secondary p-6 rounded-lg border border-border">
         <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-zinc-100 mb-2">
+          <h3 className="text-lg font-semibold text-foreground mb-2">
             Top-Up Payment
           </h3>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             {paymentVerified ? 'Payment Confirmed!' : isCheckingPayment ? 'Waiting for payment...' : 'Scan QR code or copy invoice to pay'}
           </p>
         </div>
@@ -271,10 +271,10 @@ export function TopUpBalance({ userPubkey, authData, currentBalance, onTopUpComp
 
             {/* Checking Status */}
             {isCheckingPayment && (
-              <div className="bg-[#F7931A]/10 border border-[#F7931A]/20 rounded p-3 text-sm text-zinc-200 mb-4 flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin text-[#F7931A]" />
+              <div className="bg-primary/10 border border-primary/20 rounded p-3 text-sm text-foreground mb-4 flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-primary" />
                 Checking for payment...
-                <div className="text-xs text-zinc-400 mt-1">
+                <div className="text-xs text-muted-foreground mt-1">
                   Checking every 3 seconds for up to 3 minutes
                 </div>
               </div>
@@ -339,17 +339,17 @@ export function TopUpBalance({ userPubkey, authData, currentBalance, onTopUpComp
 
   // Show amount input and payment method selection
   return (
-    <div className="bg-[#1a1a1a] p-6 rounded-lg border border-zinc-800">
+    <div className="bg-secondary p-6 rounded-lg border border-border">
       <div className="flex items-center gap-2 mb-4">
-        <Plus className="w-5 h-5 text-[#F7931A]" />
-        <h3 className="text-lg font-semibold text-zinc-100">
+        <Plus className="w-5 h-5 text-primary" />
+        <h3 className="text-lg font-semibold text-foreground">
           Top Up Balance
         </h3>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Amount to add (sats)
           </label>
           <Input
@@ -372,13 +372,13 @@ export function TopUpBalance({ userPubkey, authData, currentBalance, onTopUpComp
           </div>
         )}
 
-        <div className="bg-[#111] border border-zinc-800 rounded p-3">
+        <div className="bg-card border border-border rounded p-3">
           <div className="flex justify-between text-sm mb-2">
-            <span className="text-zinc-500">Current Balance:</span>
-            <span className="font-semibold font-mono text-zinc-100">{currentBalance} sats</span>
+            <span className="text-muted-foreground">Current Balance:</span>
+            <span className="font-semibold font-mono text-foreground">{currentBalance} sats</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-500">New Balance:</span>
+            <span className="text-muted-foreground">New Balance:</span>
             <span className="font-semibold font-mono text-emerald-400">
               {currentBalance + (parseInt(topUpAmount) || 0)} sats
             </span>
@@ -517,12 +517,12 @@ function BitcoinConnectTopUp({
   }
 
   return (
-    <div className="bg-[#111] p-6 rounded-lg border border-zinc-800">
+    <div className="bg-card p-6 rounded-lg border border-border">
       <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-zinc-100 mb-2">
+        <h3 className="text-lg font-semibold text-foreground mb-2">
           Bitcoin Connect Payment
         </h3>
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-muted-foreground">
           Top up <span className="font-mono">{amount}</span> sats
         </p>
       </div>
@@ -537,13 +537,13 @@ function BitcoinConnectTopUp({
         <Button
           onClick={handlePayWithWebLN}
           disabled={isPaying || isVerifying}
-          className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+          className="w-full bg-primary hover:bg-primary/90"
         >
           {isVerifying ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Verifying Payment...
-              <div className="text-xs text-zinc-400 mt-1">
+              <div className="text-xs text-muted-foreground mt-1">
                 Checking every 3 seconds for up to 3 minutes
               </div>
             </>

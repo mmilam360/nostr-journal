@@ -40,9 +40,9 @@ const IncentiveModal = dynamic(() => import("@/components/incentive-modal").then
   ssr: false,
   loading: () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#111] p-6 rounded-lg max-w-md w-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7931A] mx-auto mb-4"></div>
-        <p className="text-center text-zinc-400">Loading Lightning Goals...</p>
+      <div className="bg-card p-6 rounded-lg max-w-md w-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-center text-muted-foreground">Loading Lightning Goals...</p>
       </div>
     </div>
   )
@@ -92,14 +92,14 @@ const SyncStatusIcons = ({ note }: { note: Note }) => {
       {note.publishedToRelays ? (
         <Upload className="w-3 h-3 text-green-500" title="Published to relays" />
       ) : (
-        <Upload className="w-3 h-3 text-zinc-500" title="Not published to relays" />
+        <Upload className="w-3 h-3 text-muted-foreground" title="Not published to relays" />
       )}
 
       {/* Download status - fetched from relays */}
       {note.fetchedFromRelays ? (
-        <Download className="w-3 h-3 text-[#F7931A]" title="Fetched from relays" />
+        <Download className="w-3 h-3 text-primary" title="Fetched from relays" />
       ) : (
-        <Download className="w-3 h-3 text-zinc-500" title="Not fetched from relays" />
+        <Download className="w-3 h-3 text-muted-foreground" title="Not fetched from relays" />
       )}
     </div>
   )
@@ -1207,13 +1207,13 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
       case "synced":
         return <CheckCircle2 className="h-4 w-4 text-green-500" />
       case "syncing":
-        return <Loader2 className="h-4 w-4 animate-spin text-[#F7931A]" />
+        return <Loader2 className="h-4 w-4 animate-spin text-primary" />
       case "error":
         return <AlertCircle className="h-4 w-4 text-red-500" />
       case "offline":
-        return <CloudOff className="h-4 w-4 text-zinc-500" />
+        return <CloudOff className="h-4 w-4 text-muted-foreground" />
       default:
-        return <RefreshCw className="h-4 w-4 text-zinc-500" />
+        return <RefreshCw className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -1449,7 +1449,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     <ErrorBoundary>
       <div className="h-screen bg-background flex flex-col w-full">
         {/* Clean Header */}
-        <header className="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-zinc-800">
+        <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
           <div className="w-full px-4 py-3">
             <div className="flex items-center justify-between w-full">
               {/* Left side */}
@@ -1505,7 +1505,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                 {/* Sync status - Mobile (icon only) */}
                 <div className="md:hidden">
                   {isRefreshing ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-[#F7931A]" title="Refreshing..." />
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" title="Refreshing..." />
                   ) : (
                     <Button
                       variant="ghost"
@@ -1531,17 +1531,17 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                       setShowIncentives(true)
                     }}
                     className={hasLightningGoals
-                      ? "text-[#F7931A] hover:text-[#F7931A] hover:bg-[#F7931A]/10"
-                      : "text-[#F7931A] hover:text-[#F7931A] hover:bg-[#F7931A]/10"
+                      ? "text-primary hover:text-primary hover:bg-primary/10"
+                      : "text-primary hover:text-primary hover:bg-primary/10"
                     }
                     title={hasLightningGoals ? `${userStreak} day streak` : "Set up Lightning Goals"}
                   >
                     {hasLightningGoals ? (
                       <>
                         {/* Mobile: Circle with number */}
-                        <div className={`sm:hidden flex items-center justify-center w-8 h-8 bg-[#F7931A]/10 rounded-full transition-all duration-300 ${showStreakAnimation ? 'animate-truefocus ring-2 ring-emerald-500 bg-emerald-500/10' : ''
+                        <div className={`sm:hidden flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full transition-all duration-300 ${showStreakAnimation ? 'animate-truefocus ring-2 ring-emerald-500 bg-emerald-500/10' : ''
                           }`}>
-                          <span className={`font-bold text-sm ${showStreakAnimation ? 'text-emerald-400' : 'text-[#F7931A]'
+                          <span className={`font-bold text-sm ${showStreakAnimation ? 'text-emerald-400' : 'text-primary'
                             }`}>
                             {userStreak}
                           </span>
@@ -1557,8 +1557,8 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                     ) : (
                       <>
                         {/* Mobile: Lightning icon to indicate feature */}
-                        <div className="sm:hidden flex items-center justify-center w-8 h-8 bg-[#F7931A]/10 rounded-full">
-                          <Zap className="w-4 h-4 text-[#F7931A]" />
+                        <div className="sm:hidden flex items-center justify-center w-8 h-8 bg-primary/10 rounded-full">
+                          <Zap className="w-4 h-4 text-primary" />
                         </div>
                         {/* Desktop: Full text */}
                         <span className="hidden sm:inline">Set Up Daily Goal</span>
@@ -1854,7 +1854,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                         console.log('[Dropdown] Support clicked')
                         setShowDonationModal(true)
                       }}
-                      className="text-amber-600 focus:text-amber-600"
+                      className="text-primary focus:text-primary"
                     >
                       <Zap className="w-4 h-4 mr-2" />
                       Support

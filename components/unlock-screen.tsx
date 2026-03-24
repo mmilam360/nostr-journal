@@ -121,7 +121,7 @@ export default function UnlockScreen({ userPubkey, onUnlock, onForgetAccount }: 
 
           <Button
             onClick={handleUnlock}
-            className="w-full h-12 bg-[#F7931A] hover:bg-[#E8850F] text-white"
+            className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground"
             size="lg"
             disabled={isUnlocking || !password}
           >
