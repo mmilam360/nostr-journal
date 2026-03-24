@@ -466,7 +466,7 @@ export default function Editor({ note, onUpdateNote, onPublishNote, onPublishHig
               <div className="flex items-center gap-3">
                 {/* Encryption indicator and word count */}
                 <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                <div className="flex items-center gap-1 text-emerald-400">
                   <Lock className="w-3 h-3" />
                   <span>Encrypted</span>
                 </div>

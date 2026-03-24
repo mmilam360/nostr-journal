@@ -707,8 +707,8 @@ function BitcoinConnectLightningGoalsManagerInner({
                   Where rewards will be sent (auto-filled from your wallet or profile)
                 </p>
                 {!lightningAddress && (
-                  <p className="text-xs text-amber-600 mt-1">
-                    ⚠️ No Lightning address found in wallet. Please enter one manually.
+                  <p className="text-xs text-amber-500 mt-1">
+                    No Lightning address found in wallet. Please enter one manually.
                   </p>
                 )}
               </div>
@@ -815,13 +815,13 @@ function BitcoinConnectLightningGoalsManagerInner({
             // CONNECT WALLET FLOW: Show 1-click payment prominently
             <>
               {/* Primary: 1-Click Payment */}
-              <div className="border-2 border-green-200 dark:border-green-800 rounded-lg p-6 bg-green-50 dark:bg-green-900/20">
+              <div className="border border-zinc-800 rounded-lg p-6 bg-[#1a1a1a]">
                 <div className="text-center mb-4">
                   <div className="mb-3"><Zap className="w-12 h-12 text-[#F7931A] mx-auto" /></div>
-                  <h3 className="text-lg font-semibold text-green-700 dark:text-green-300 mb-2">
+                  <h3 className="text-lg font-semibold text-zinc-100 mb-2">
                     Pay with Connected Wallet
                   </h3>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400 mb-3">
+                  <p className="text-3xl font-bold font-mono text-[#F7931A] mb-3">
                     {invoiceData.amount} sats
                   </p>
                 </div>

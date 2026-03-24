@@ -296,7 +296,7 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
             </h3>
             <p className="text-sm text-zinc-500">
               <span className="font-mono text-[#F7931A] font-semibold">{settings.stakeAmount.toLocaleString()}</span>
-              <span className="text-zinc-600 mx-1.5">/</span>
+              <span className="text-zinc-500 mx-1.5">/</span>
               <span className="font-mono text-zinc-300">{Math.floor(settings.stakeAmount / settings.dailyRewardSats)}</span> days of rewards
             </p>
           </div>
@@ -338,7 +338,7 @@ export function IncentiveSetup({ userPubkey, authData }: any) {
               <div className="w-full border-t border-zinc-800" />
             </div>
             <div className="relative flex justify-center">
-              <span className="bg-[#0a0a0a] px-3 text-xs text-zinc-600">or scan with any Lightning wallet</span>
+              <span className="bg-[#0a0a0a] px-3 text-xs text-zinc-500">or scan with any Lightning wallet</span>
             </div>
           </div>
 

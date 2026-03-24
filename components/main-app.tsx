@@ -1531,7 +1531,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                       setShowIncentives(true)
                     }}
                     className={hasLightningGoals
-                      ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                      ? "text-[#F7931A] hover:text-[#F7931A] hover:bg-[#F7931A]/10"
                       : "text-[#F7931A] hover:text-[#F7931A] hover:bg-[#F7931A]/10"
                     }
                     title={hasLightningGoals ? `${userStreak} day streak` : "Set up Lightning Goals"}
@@ -1539,16 +1539,16 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                     {hasLightningGoals ? (
                       <>
                         {/* Mobile: Circle with number */}
-                        <div className={`sm:hidden flex items-center justify-center w-8 h-8 bg-orange-100 dark:bg-orange-900/30 rounded-full transition-all duration-300 ${showStreakAnimation ? 'animate-truefocus ring-2 ring-green-500 bg-green-100 dark:bg-green-900/30' : ''
+                        <div className={`sm:hidden flex items-center justify-center w-8 h-8 bg-[#F7931A]/10 rounded-full transition-all duration-300 ${showStreakAnimation ? 'animate-truefocus ring-2 ring-emerald-500 bg-emerald-500/10' : ''
                           }`}>
-                          <span className={`font-bold text-sm ${showStreakAnimation ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'
+                          <span className={`font-bold text-sm ${showStreakAnimation ? 'text-emerald-400' : 'text-[#F7931A]'
                             }`}>
                             {userStreak}
                           </span>
                         </div>
                         {/* Desktop: Full text with animation */}
                         <span className={`hidden sm:inline font-semibold transition-all duration-300 ${showStreakAnimation
-                          ? 'animate-truefocus text-green-600'
+                          ? 'animate-truefocus text-emerald-400'
                           : ''
                           }`}>
                           {userStreak} day streak
