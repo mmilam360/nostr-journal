@@ -235,7 +235,65 @@ function BitcoinConnectLightningGoalsManagerInner({
       startPaymentVerification(invoiceData.paymentHash, invoiceData.invoice)
     }
   }, [screen, paymentMethod, invoiceData, verificationStarted])
-  
+
+  // ── Payment Recovery: on mount, check for interrupted payments ──
+  // If user paid but closed the tab before Nostr signing completed,
+  // we detect it here and retry the Nostr publish automatically.
+  useEffect(() => {
+    if (!userPubkey || screen !== 'setup') return
+
+    async function recoverPendingPayments() {
+      const pendingKey = `pending-stake-${userPubkey}`
+      const raw = localStorage.getItem(pendingKey)
+      if (!raw) return
+
+      try {
+        const pending = JSON.parse(raw)
+        const ageMs = Date.now() - new Date(pending.confirmedAt).getTime()
+        // Only recover if within last 24 hours
+        if (ageMs > 24 * 60 * 60 * 1000) {
+          localStorage.removeItem(pendingKey)
+          return
+        }
+
+        console.log('[Manager] 🔄 Found pending stake from interrupted session:', pending)
+        toast('Recovering your payment from last session...', { duration: 4000 })
+
+        // Retry Nostr publishing
+        const { createStake } = await import('@/lib/lightning-goals')
+        await createStake(userPubkey, {
+          dailyWordGoal: pending.goalWords,
+          dailyReward: pending.dailyReward,
+          depositAmount: pending.amount,
+          lightningAddress: pending.lightningAddress,
+          currentWordCount: 0,
+          paymentHash: pending.paymentHash
+        }, authData)
+
+        localStorage.removeItem(pendingKey)
+        if (pending.paymentHash) {
+          fetch('/api/incentive/record-payment', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ paymentHash: pending.paymentHash })
+          }).catch(() => {})
+        }
+
+        console.log('[Manager] ✅ Recovered pending stake — Nostr event published')
+        toast.success('Payment recovered! Your stake is now active.')
+        setScreen('active')
+        if (onStakeActivated) onStakeActivated()
+        if (onSetupStatusChange) onSetupStatusChange(true)
+
+      } catch (err) {
+        console.error('[Manager] ⚠️ Recovery failed:', err.message)
+        toast('Could not auto-recover payment. Please contact support with your payment details.', { duration: 8000 })
+      }
+    }
+
+    recoverPendingPayments()
+  }, [userPubkey, screen])
+
   async function createDepositInvoice() {
     console.log('[Manager] 🔘 Create Stake Invoice button clicked')
     console.log('[Manager] 🔍 Current state:', { 
@@ -558,19 +616,59 @@ function BitcoinConnectLightningGoalsManagerInner({
   // Bitcoin Connect = User deposits | NWC = Automated reward payouts
   
   async function handlePaymentConfirmed(amount: number) {
-    console.log('[Manager] 💰 Crediting balance:', amount, 'sats')
+    const paymentHash = invoiceData?.paymentHash || ''
+    console.log('[Manager] 💰 Payment confirmed, recording to server ledger first...', { amount, paymentHash: paymentHash.substring(0, 16) })
 
-    // Move to active screen immediately — don't block on Nostr signing
+    // ── STEP 1: Record to server-side ledger (NWC double-verify + persist) ──
+    // This runs BEFORE anything else. If the user closes the tab after this,
+    // their payment is recorded and recoverable.
+    try {
+      const ledgerRes = await fetch('/api/incentive/record-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          paymentHash,
+          userPubkey,
+          amountSats: amount,
+          lightningAddress,
+          goalWords,
+          dailyReward,
+          stakeConfig: { goalWords, dailyReward, lightningAddress, amount }
+        })
+      })
+      const ledgerData = await ledgerRes.json()
+      if (ledgerData.success) {
+        console.log('[Manager] ✅ Payment recorded in server ledger')
+      } else {
+        console.warn('[Manager] ⚠️ Server ledger record failed:', ledgerData.error)
+      }
+    } catch (err) {
+      console.warn('[Manager] ⚠️ Server ledger unreachable, continuing with localStorage backup')
+    }
+
+    // ── STEP 2: localStorage backup — survives tab close/refresh ──
+    const pendingKey = `pending-stake-${userPubkey}`
+    localStorage.setItem(pendingKey, JSON.stringify({
+      paymentHash,
+      amount,
+      lightningAddress,
+      goalWords,
+      dailyReward,
+      confirmedAt: new Date().toISOString()
+    }))
+    console.log('[Manager] 💾 Payment backed up to localStorage')
+
+    // ── STEP 3: Move to active screen immediately ──
     setScreen('active')
     if (onStakeActivated) onStakeActivated()
     if (onSetupStatusChange) onSetupStatusChange(true)
     toast.success('Payment confirmed! Stake activated.')
 
-    // Publish Nostr stake event in the background (non-blocking)
-    // Extension signing popup will appear without freezing the UI
+    // ── STEP 4: Publish Nostr stake event in background (non-blocking) ──
+    // Extension signing popup appears without freezing the UI.
+    // If it fails, the server ledger + localStorage are the recovery path.
     ;(async () => {
     try {
-      // Use createStake function (same as Bitcoin Connect method)
       const { createStake } = await import('@/lib/lightning-goals')
       
       await createStake(userPubkey, {
@@ -579,21 +677,28 @@ function BitcoinConnectLightningGoalsManagerInner({
         depositAmount: amount,
         lightningAddress: lightningAddress,
         currentWordCount: currentWordCount,
-        paymentHash: invoiceData?.paymentHash || 'confirmed' // Include payment hash if available
+        paymentHash: paymentHash || 'confirmed'
       }, authData)
       
-      console.log('[Manager] ✅ Nostr stake event published:', {
-        goalWords,
-        dailyReward,
-        lightningAddress,
-        amount
-      })
+      console.log('[Manager] ✅ Nostr stake event published')
+
+      // ── STEP 5: Mark as published in server ledger + clear localStorage backup ──
+      if (paymentHash) {
+        fetch('/api/incentive/record-payment', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paymentHash })
+        }).catch(() => {}) // fire and forget
+      }
+      localStorage.removeItem(pendingKey)
+      console.log('[Manager] 🧹 Cleared pending stake backup (Nostr published successfully)')
       
     } catch (error) {
-      // Background publish failed — stake is still active, just log it
-      console.error('[Manager] ⚠️ Background Nostr publish failed (stake still active):', error.message)
+      // Background publish failed — stake is still active via server ledger + localStorage
+      console.error('[Manager] ⚠️ Background Nostr publish failed. Payment is safe in server ledger + localStorage. Will retry on next load.', error.message)
+      toast('Stake saved. Sign the Nostr event when prompted to fully activate.', { duration: 6000 })
     }
-    })() // end background IIFE
+    })()
   }
   
   // ============================================
