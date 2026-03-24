@@ -4,15 +4,16 @@ import dynamic from "next/dynamic"
 import LoginPageHorizontal from "@/components/login-page-horizontal"
 import type { AuthData } from "@/components/main-app"
 import { ErrorBoundary } from "@/components/error-boundary"
+import { toast } from 'sonner'
 
 // Dynamically import MainApp to avoid SSR issues and bundling problems
 const MainApp = dynamic(() => import("@/components/main-app").then(mod => ({ default: mod.MainApp })), {
   ssr: false,
   loading: () => (
-    <main className="min-h-screen bg-slate-900 flex items-center justify-center">
+    <main className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <p className="text-slate-400">Loading...</p>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7931A] mx-auto mb-4"></div>
+        <p className="text-zinc-500">Loading...</p>
       </div>
     </main>
   )
@@ -138,13 +139,13 @@ export default function Home() {
     // Validate the data before storing
     if (!data.pubkey) {
       console.error("[NostrJournal] ❌ ERROR: No pubkey in auth data!")
-      alert("Login failed: No pubkey received. Please try again.")
+      toast.error("Login failed: No pubkey received. Please try again.")
       return
     }
 
     if (data.pubkey.length !== 64) {
       console.error("[NostrJournal] ❌ ERROR: Invalid pubkey length:", data.pubkey.length)
-      alert("Login failed: Invalid pubkey format. Please try again.")
+      toast.error("Login failed: Invalid pubkey format. Please try again.")
       return
     }
 
@@ -152,7 +153,7 @@ export default function Home() {
     if (data.authMethod === "nsec") {
       if (!data.privateKey) {
         console.error("[NostrJournal] ❌ ERROR: Nsec login missing privateKey!")
-        alert("Login failed: Private key missing.")
+        toast.error("Login failed: Private key missing.")
         return
       }
       console.log("[NostrJournal] ✅ Nsec login data validated")
@@ -207,7 +208,7 @@ export default function Home() {
       console.log("[NostrJournal] ✅ State updated, app should now show main content")
     } catch (error) {
       console.error("[NostrJournal] ❌ Error saving session:", error)
-      alert("Login failed: Could not save session. Please try again.")
+      toast.error("Login failed: Could not save session. Please try again.")
     }
   }
 
@@ -227,10 +228,10 @@ export default function Home() {
 
   if (isCheckingSession) {
     return (
-      <main className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <main className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">Loading...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7931A] mx-auto mb-4"></div>
+          <p className="text-zinc-500">Loading...</p>
         </div>
       </main>
     )
@@ -238,7 +239,7 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-      <main className="min-h-screen bg-slate-900">
+      <main className="min-h-screen bg-[#0a0a0a]">
         
         {isLoggedIn && authData ? (
           <MainApp authData={authData} onLogout={handleLogout} />

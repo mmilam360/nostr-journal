@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Target, Zap, Wallet, CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface SimpleIncentiveSetupProps {
   userPubkey: string
@@ -50,11 +51,11 @@ export function SimpleIncentiveSetup({ userPubkey, authData }: SimpleIncentiveSe
       setHasSetup(true)
       
       // Show success message
-      alert(`✅ Lightning Goals setup complete!\n\nDaily Goal: ${settings.dailyWordGoal} words\nReward: ${settings.dailyRewardSats} sats\nStake: ${settings.stakeAmount} sats`)
+      toast.success('Lightning Goals setup complete')
       
     } catch (error) {
       console.error('Error saving settings:', error)
-      alert('❌ Error saving settings. Please try again.')
+      toast.error('Error saving settings. Please try again.')
     } finally {
       setLoading(false)
     }

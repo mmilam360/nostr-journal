@@ -5,6 +5,7 @@ import { Plus, Trash2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getRelays as getRelaysFromManager, getDefaultRelays, saveRelays } from "@/lib/relay-manager"
+import { toast } from "sonner"
 
 const DEFAULT_RELAYS = ["wss://relay.nsec.app", "wss://relay.damus.io", "wss://nos.lol", "wss://relay.nostr.band"]
 
@@ -51,11 +52,11 @@ export function RelayManager({ onClose, onSave, initialRelays }: RelayManagerPro
   const handleAddRelay = () => {
     if (!newRelay.trim()) return
     if (!newRelay.startsWith("wss://") && !newRelay.startsWith("ws://")) {
-      alert("Relay URL must start with wss:// or ws://")
+      toast.error("Relay URL must start with wss:// or ws://")
       return
     }
     if (relays.includes(newRelay)) {
-      alert("This relay is already in your list")
+      toast.error("This relay is already in your list")
       return
     }
     setRelays([...relays, newRelay])

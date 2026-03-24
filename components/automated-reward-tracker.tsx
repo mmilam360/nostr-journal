@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Gift, Target, Zap, CheckCircle, AlertTriangle, TrendingUp, Copy, ExternalLink } from 'lucide-react'
 import { publishPayoutRecord } from '@/lib/incentive-payout'
+import { toast } from 'sonner'
 
 interface AutomatedRewardTrackerProps {
   userPubkey: string
@@ -414,7 +415,7 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
       
     } catch (error) {
       console.error('[Tracker] ❌ Error cancelling stake:', error)
-      alert('Failed to cancel stake. Please try again.')
+      toast.error('Failed to cancel stake. Please try again.')
     } finally {
       setCancelling(false)
       setShowCancelModal(false)
@@ -425,7 +426,7 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
     if (paymentResult?.paymentHash) {
       try {
         await navigator.clipboard.writeText(paymentResult.paymentHash)
-        alert('Payment hash copied to clipboard!')
+        toast.success('Payment hash copied to clipboard')
       } catch (error) {
         console.error('Failed to copy:', error)
       }

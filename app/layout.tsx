@@ -6,6 +6,7 @@ import { Suspense } from "react"
 import "./globals.css"
 import { ThemeProvider } from "@/lib/theme-provider"
 import { BitcoinConnectProvider } from '@/components/providers/bitcoin-connect-provider'
+import { Toaster } from 'sonner'
 
 export const metadata: Metadata = {
   title: "Nostr Journal",
@@ -34,6 +35,7 @@ export default function RootLayout({
         <BitcoinConnectProvider>
           <ThemeProvider>
             <Suspense fallback={null}>{children}</Suspense>
+            <Toaster position="bottom-right" theme="dark" richColors />
           </ThemeProvider>
         </BitcoinConnectProvider>
       </body>

@@ -6,6 +6,7 @@ import { ClientOnly } from './client-only'
 import { LightningInvoiceQR } from './lightning-invoice-qr'
 import { CheckCircle, Smartphone } from 'lucide-react'
 import * as bolt11 from 'bolt11'
+import { toast } from 'sonner'
 
 interface InvoiceData {
   invoice: string
@@ -251,19 +252,19 @@ function BitcoinConnectLightningGoalsManagerInner({
     // Validate required fields
     if (!lightningAddress || !lightningAddress.includes('@')) {
       console.log('[Manager] ❌ Invalid lightning address:', lightningAddress)
-      alert('Please enter a valid Lightning address (format: user@domain.com)')
+      toast.error('Please enter a valid Lightning address (format: user@domain.com)')
       return
     }
 
     if (dailyReward <= 0) {
       console.log('[Manager] ❌ Invalid daily reward:', dailyReward)
-      alert('Daily reward must be greater than 0')
+      toast.error('Daily reward must be greater than 0')
       return
     }
     
     if (stakeAmount <= 0) {
       console.log('[Manager] ❌ Invalid stake amount:', stakeAmount)
-      alert('Stake amount must be greater than 0')
+      toast.error('Stake amount must be greater than 0')
       return
     }
     
@@ -368,7 +369,7 @@ function BitcoinConnectLightningGoalsManagerInner({
         stack: error.stack,
         name: error.name
       })
-      alert('Failed to create invoice: ' + error.message)
+      toast.error('Failed to create invoice: ' + error.message)
     } finally {
       // Set loading=false since we're showing the payment options screen
       setLoading(false)
@@ -418,7 +419,7 @@ function BitcoinConnectLightningGoalsManagerInner({
     } catch (error) {
       console.error('[Manager] ❌ Bitcoin Connect payment process failed:', error)
       setLoading(false)
-      alert('Payment process failed. Please try the QR code method instead.')
+      toast.error('Payment failed. Try the QR code method instead.')
     }
   }
   
@@ -487,7 +488,7 @@ function BitcoinConnectLightningGoalsManagerInner({
               stakeAmount: stakeAmount,
               finalAmount: confirmedAmount 
             })
-            alert('Payment confirmed but amount could not be determined. Please contact support.')
+            toast.error('Payment confirmed but amount could not be determined. Please contact support.')
             setLoading(false)
             return
           }
@@ -525,7 +526,7 @@ function BitcoinConnectLightningGoalsManagerInner({
           clearInterval(interval)
           setLoading(false)
           
-          alert('Payment verification timed out after 3 minutes. If you paid, please contact support with this payment hash: ' + paymentHash.substring(0, 16) + '...')
+          toast.error('Payment verification timed out. If you paid, contact support with payment hash: ' + paymentHash.substring(0, 16) + '...')
           
         } else {
           // Still waiting
@@ -543,7 +544,7 @@ function BitcoinConnectLightningGoalsManagerInner({
         if (attempts >= maxAttempts) {
           clearInterval(interval)
           setLoading(false)
-          alert('Payment verification failed after maximum attempts. Please try again.')
+          toast.error('Payment verification failed. Please try again.')
         }
       }
     }, 3000) // Check every 3 seconds
@@ -605,7 +606,7 @@ function BitcoinConnectLightningGoalsManagerInner({
         currentWordCount,
         paymentHash: invoiceData?.paymentHash
       })
-      alert('Payment received but failed to update balance. Check console for details.')
+      toast.error('Payment received but failed to update balance. Check console for details.')
     }
   }
   
@@ -719,7 +720,7 @@ function BitcoinConnectLightningGoalsManagerInner({
             <button
               onClick={async () => {
                 if (!isConnected) {
-                  alert('Please connect your wallet using the button at the top of the page first')
+                  toast('Connect your wallet using the button at the top of the page first')
                   return
                 }
                 setPaymentMethod('connect')

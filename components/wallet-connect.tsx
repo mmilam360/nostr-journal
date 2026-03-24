@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { ClientOnly } from './client-only'
+import { toast } from 'sonner'
 
 export function WalletConnect() {
   return (
@@ -108,7 +109,7 @@ function WalletConnectInner() {
       }
     } catch (error) {
       console.error('[WalletConnect] ❌ Connection failed:', error)
-      alert('Failed to connect wallet: ' + error.message)
+      toast.error('Failed to connect wallet: ' + error.message)
     }
   }
   

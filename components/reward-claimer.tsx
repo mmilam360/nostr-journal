@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { fetchIncentiveSettings, fetchTodayProgress, markRewardClaimed, recordTransaction, updateStakeBalance } from '@/lib/incentive-nostr'
 import { publishPayoutRecord } from '@/lib/incentive-payout'
+import { toast } from 'sonner'
 
 export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
   const [status, setStatus] = useState<'loading' | 'not_met' | 'met' | 'claimed'>('loading')
@@ -116,10 +117,10 @@ export function RewardClaimer({ userPubkey, wordCount, authData }: any) {
         authData
       )
 
-      alert(`✅ Reward claimed! ${result.amountSats} sats sent to your Lightning address!`)
+      toast.success(`Reward claimed! ${result.amountSats} sats sent to your Lightning address`)
       setStatus('claimed')
     } catch (error: any) {
-      alert(`Failed to claim reward: ${error.message}`)
+      toast.error(`Failed to claim reward: ${error.message}`)
       console.error(error)
     } finally {
       setClaiming(false)

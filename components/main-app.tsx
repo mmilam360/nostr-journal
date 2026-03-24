@@ -29,6 +29,7 @@ import PublishConfirmationModal from "@/components/publish-confirmation-modal"
 import PublishModal from "@/components/publish-modal"
 import DeleteConfirmationModal from "@/components/delete-confirmation-modal"
 import ProfilePage from "@/components/profile-page"
+import { toast } from 'sonner'
 import { isIncentiveEnabled } from "@/lib/feature-flags"
 import { getLightningGoals } from "@/lib/lightning-goals"
 // LightningGoalsMonitor will be dynamically imported below
@@ -39,9 +40,9 @@ const IncentiveModal = dynamic(() => import("@/components/incentive-modal").then
   ssr: false,
   loading: () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-        <p className="text-center text-gray-600">Loading Lightning Goals...</p>
+      <div className="bg-[#111] p-6 rounded-lg max-w-md w-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F7931A] mx-auto mb-4"></div>
+        <p className="text-center text-zinc-400">Loading Lightning Goals...</p>
       </div>
     </div>
   )
@@ -91,14 +92,14 @@ const SyncStatusIcons = ({ note }: { note: Note }) => {
       {note.publishedToRelays ? (
         <Upload className="w-3 h-3 text-green-500" title="Published to relays" />
       ) : (
-        <Upload className="w-3 h-3 text-gray-400" title="Not published to relays" />
+        <Upload className="w-3 h-3 text-zinc-500" title="Not published to relays" />
       )}
 
       {/* Download status - fetched from relays */}
       {note.fetchedFromRelays ? (
-        <Download className="w-3 h-3 text-blue-500" title="Fetched from relays" />
+        <Download className="w-3 h-3 text-[#F7931A]" title="Fetched from relays" />
       ) : (
-        <Download className="w-3 h-3 text-gray-400" title="Not fetched from relays" />
+        <Download className="w-3 h-3 text-zinc-500" title="Not fetched from relays" />
       )}
     </div>
   )
@@ -832,11 +833,11 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         console.log("[NostrJournal] ✅ Note creation complete!")
       } else {
         console.error("[NostrJournal] ❌ Failed to save note to relays:", result.error || "Unknown error")
-        alert(`Failed to save note: ${result.error || "Unknown error"}`)
+        toast.error(`Failed to save note: ${result.error || "Unknown error"}`)
       }
     } catch (error) {
       console.error("[NostrJournal] ❌ Error saving new note to relays:", error)
-      alert(`Error saving note: ${error instanceof Error ? error.message : "Unknown error"}`)
+      toast.error(`Error saving note: ${error instanceof Error ? error.message : "Unknown error"}`)
     }
 
     console.log("[NostrJournal] New note created:", newNote.id)
@@ -946,11 +947,11 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
 
       } else {
         console.error("[NostrJournal] ❌ Failed to save updated note to relays:", result.error || "Unknown error")
-        alert(`Failed to update note: ${result.error || "Unknown error"}`)
+        toast.error(`Failed to update note: ${result.error || "Unknown error"}`)
       }
     } catch (error) {
       console.error("[NostrJournal] ❌ Error saving updated note to relays:", error)
-      alert(`Error updating note: ${error instanceof Error ? error.message : "Unknown error"}`)
+      toast.error(`Error updating note: ${error instanceof Error ? error.message : "Unknown error"}`)
     }
 
     // Update tags
@@ -994,7 +995,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     } catch (error) {
       console.error("[NostrJournal] Error publishing to Nostr:", error)
       const errorMessage = error instanceof Error ? error.message : "Unknown error"
-      alert(`Failed to publish to Nostr: ${errorMessage}`)
+      toast.error(`Failed to publish to Nostr: ${errorMessage}`)
       setShowPublishConfirmation(false)
       setNoteToPublish(null)
     } finally {
@@ -1206,13 +1207,13 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
       case "synced":
         return <CheckCircle2 className="h-4 w-4 text-green-500" />
       case "syncing":
-        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+        return <Loader2 className="h-4 w-4 animate-spin text-[#F7931A]" />
       case "error":
         return <AlertCircle className="h-4 w-4 text-red-500" />
       case "offline":
-        return <CloudOff className="h-4 w-4 text-gray-500" />
+        return <CloudOff className="h-4 w-4 text-zinc-500" />
       default:
-        return <RefreshCw className="h-4 w-4 text-gray-500" />
+        return <RefreshCw className="h-4 w-4 text-zinc-500" />
     }
   }
 
@@ -1343,11 +1344,11 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
   const handleAddRelay = () => {
     if (!newRelay.trim()) return
     if (!newRelay.startsWith("wss://") && !newRelay.startsWith("ws://")) {
-      alert("Relay URL must start with wss:// or ws://")
+      toast.error("Relay URL must start with wss:// or ws://")
       return
     }
     if (relays.includes(newRelay)) {
-      alert("This relay is already in your list")
+      toast("This relay is already in your list")
       return
     }
     const updatedRelays = [...relays, newRelay]
@@ -1448,7 +1449,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
     <ErrorBoundary>
       <div className="h-screen bg-background flex flex-col w-full">
         {/* Clean Header */}
-        <header className="sticky top-0 z-50 bg-white/95 dark:bg-card/95 backdrop-blur-sm border-b border-border">
+        <header className="sticky top-0 z-50 bg-[#0a0a0a]/95 backdrop-blur-sm border-b border-zinc-800">
           <div className="w-full px-4 py-3">
             <div className="flex items-center justify-between w-full">
               {/* Left side */}
@@ -1504,7 +1505,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                 {/* Sync status - Mobile (icon only) */}
                 <div className="md:hidden">
                   {isRefreshing ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-blue-500" title="Refreshing..." />
+                    <Loader2 className="h-4 w-4 animate-spin text-[#F7931A]" title="Refreshing..." />
                   ) : (
                     <Button
                       variant="ghost"
@@ -1531,7 +1532,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                     }}
                     className={hasLightningGoals
                       ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:hover:bg-orange-900/20"
-                      : "text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      : "text-[#F7931A] hover:text-[#F7931A] hover:bg-[#F7931A]/10"
                     }
                     title={hasLightningGoals ? `${userStreak} day streak` : "Set up Lightning Goals"}
                   >
@@ -1556,8 +1557,8 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                     ) : (
                       <>
                         {/* Mobile: Lightning icon to indicate feature */}
-                        <div className="sm:hidden flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full">
-                          <Zap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <div className="sm:hidden flex items-center justify-center w-8 h-8 bg-[#F7931A]/10 rounded-full">
+                          <Zap className="w-4 h-4 text-[#F7931A]" />
                         </div>
                         {/* Desktop: Full text */}
                         <span className="hidden sm:inline">Set Up Daily Goal</span>
@@ -1738,11 +1739,11 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
                                   console.log('ℹ️ No active goals to update Lightning address:', error.message)
                                 }
 
-                                alert('Lightning address saved successfully!')
+                                toast.success('Lightning address saved successfully!')
 
                               } catch (error) {
                                 console.error('Error saving Lightning address:', error)
-                                alert('Error saving Lightning address: ' + error.message)
+                                toast.error('Error saving Lightning address: ' + error.message)
                               }
                             }}
                             disabled={!userLightningAddress}

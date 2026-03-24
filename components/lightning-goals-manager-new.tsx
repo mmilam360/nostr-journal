@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Target, Zap, Wallet, CheckCircle, AlertTriangle, TrendingUp, Copy, QrCode } from 'lucide-react'
+import { toast } from 'sonner'
 import QRCode from 'qrcode'
 import { 
   getCurrentStake, 
@@ -285,7 +286,7 @@ export function LightningGoalsManager({
       if (onSetupStatusChange) onSetupStatusChange(false)
       
       // Show forfeit confirmation
-      alert(`Stake cancelled! ${stake.currentBalance} sats forfeited. All progress and transaction history has been deleted.`)
+      toast.success(`Stake cancelled. ${stake.currentBalance} sats forfeited.`)
       
     } catch (error) {
       console.error('[LightningGoals] ❌ Error:', error)

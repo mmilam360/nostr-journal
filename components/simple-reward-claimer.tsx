@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Gift, Target, Zap, CheckCircle } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface SimpleRewardClaimerProps {
   userPubkey: string
@@ -61,14 +62,14 @@ export function SimpleRewardClaimer({ userPubkey, wordCount, authData }: SimpleR
     try {
       // Check if goal is met
       if (todayProgress < settings.dailyWordGoal) {
-        alert(`❌ Goal not met yet!\n\nProgress: ${todayProgress}/${settings.dailyWordGoal} words\nStill need: ${settings.dailyWordGoal - todayProgress} words`)
+        toast.error(`Goal not met yet — ${settings.dailyWordGoal - todayProgress} words to go`)
         setLoading(false)
         return
       }
 
       // Check if already claimed today
       if (hasClaimedToday) {
-        alert('✅ Reward already claimed today! Great job!')
+        toast('Reward already claimed today')
         setLoading(false)
         return
       }
@@ -85,11 +86,11 @@ export function SimpleRewardClaimer({ userPubkey, wordCount, authData }: SimpleR
       setSettings(updatedSettings)
       setHasClaimedToday(true)
       
-      alert(`🎉 Reward claimed!\n\n+${settings.dailyRewardSats} sats added to your balance\nNew balance: ${newBalance} sats`)
+      toast.success(`Reward claimed! +${settings.dailyRewardSats} sats`)
       
     } catch (error) {
       console.error('Error claiming reward:', error)
-      alert('❌ Error claiming reward. Please try again.')
+      toast.error('Error claiming reward. Please try again.')
     } finally {
       setLoading(false)
     }

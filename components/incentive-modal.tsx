@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { X, Zap, CheckCircle, XCircle, DollarSign, CreditCard, RotateCcw, Smartphone, Plus, TrendingUp, AlertTriangle, Lock } from 'lucide-react'
 import { BitcoinConnectLightningGoalsManager } from './bitcoin-connect-lightning-goals-manager'
 import { TopUpBalance } from './top-up-balance'
+import { toast } from 'sonner'
 
 function LightningGoalsSummary({
   goals,
@@ -56,7 +57,7 @@ function LightningGoalsSummary({
       onRefresh()
     } catch (error) {
       console.error('[Summary] ❌ Error cancelling stake:', error)
-      alert('Failed to cancel stake: ' + error.message)
+      toast.error('Failed to cancel stake: ' + error.message)
     }
   }
 
