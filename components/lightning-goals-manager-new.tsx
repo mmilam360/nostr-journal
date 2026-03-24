@@ -313,7 +313,7 @@ export function LightningGoalsManager({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-blue-500" />
+              <Target className="w-5 h-5 text-[#F7931A]" />
               Set Up Your Daily Goal
             </CardTitle>
           </CardHeader>
@@ -355,10 +355,10 @@ export function LightningGoalsManager({
                 })}
                 placeholder="your@lightning.address"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Where daily rewards will be sent. 
+              <p className="text-xs text-zinc-500 mt-1">
+                Where daily rewards will be sent.
                 {userLightningAddress && (
-                  <span className="text-blue-500"> Using saved address from profile.</span>
+                  <span className="text-[#F7931A]"> Using saved address from profile.</span>
                 )}
               </p>
             </div>
@@ -414,14 +414,14 @@ export function LightningGoalsManager({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center">
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-zinc-400 mb-4">
                 Scan QR code or copy invoice to pay
               </p>
               {qrCode && (
                 <img src={qrCode} alt="Payment QR Code" className="mx-auto mb-4" />
               )}
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <p className="text-xs text-gray-500 break-all">{invoice}</p>
+              <div className="bg-[#1a1a1a] p-3 rounded-lg">
+                <p className="text-xs text-zinc-500 break-all">{invoice}</p>
               </div>
               <Button
                 onClick={() => navigator.clipboard.writeText(invoice)}
@@ -440,7 +440,7 @@ export function LightningGoalsManager({
               </div>
             )}
             
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-zinc-500">
               Payment will be verified automatically...
             </div>
           </CardContent>
@@ -464,7 +464,7 @@ export function LightningGoalsManager({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-zinc-400">
                 Are you sure you want to cancel your commitment and forfeit your stake?
               </p>
               
@@ -542,7 +542,7 @@ export function LightningGoalsManager({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="w-5 h-5 text-blue-500" />
+              <Target className="w-5 h-5 text-[#F7931A]" />
               Daily Progress
             </CardTitle>
           </CardHeader>
@@ -553,10 +553,10 @@ export function LightningGoalsManager({
                   <span>Progress: {todayProgress?.wordCount || 0} / {stake.dailyWordGoal} words</span>
                   <span>{Math.round(progress)}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                <div className="w-full bg-zinc-800 rounded-full h-2">
+                  <div
                     className={`h-2 rounded-full transition-all duration-300 ${
-                      progress >= 100 ? 'bg-green-500' : 'bg-blue-500'
+                      progress >= 100 ? 'bg-green-500' : 'bg-[#F7931A]'
                     }`}
                     style={{ width: `${progress}%` }}
                   />
@@ -584,19 +584,19 @@ export function LightningGoalsManager({
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <span className="text-gray-500">Daily Goal:</span>
+                <span className="text-zinc-500">Daily Goal:</span>
                 <p className="font-medium">{stake.dailyWordGoal} words</p>
               </div>
               <div>
-                <span className="text-gray-500">Reward:</span>
+                <span className="text-zinc-500">Reward:</span>
                 <p className="font-medium">{stake.rewardPerCompletion} sats</p>
               </div>
               <div>
-                <span className="text-gray-500">Balance:</span>
+                <span className="text-zinc-500">Balance:</span>
                 <p className="font-medium">{stake.currentBalance} sats</p>
               </div>
               <div>
-                <span className="text-gray-500">Days Left:</span>
+                <span className="text-zinc-500">Days Left:</span>
                 <p className="font-medium">{daysUntilEmpty}</p>
               </div>
             </div>

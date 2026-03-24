@@ -488,7 +488,7 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-blue-500" />
+          <Target className="w-5 h-5 text-[#F7931A]" />
           Daily Progress
         </CardTitle>
       </CardHeader>
@@ -496,15 +496,15 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
         {/* Progress Bar */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Progress</span>
-            <span className={`font-medium ${goalMet || rewardSent ? 'text-green-600' : 'text-gray-900'}`}>
+            <span className="text-zinc-400">Progress</span>
+            <span className={`font-medium ${goalMet || rewardSent ? 'text-green-600' : 'text-zinc-100'}`}>
               {currentProgress} / {settings.dailyWordGoal} words
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
+          <div className="w-full bg-zinc-800 rounded-full h-3">
             <div 
               className={`h-3 rounded-full transition-all duration-500 ${
-                goalMet || rewardSent ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-blue-500'
+                goalMet || rewardSent ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-[#F7931A]'
               }`}
               style={{ width: `${progress}%` }}
             />
@@ -516,7 +516,7 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
           <div className={`relative ${showZapAnimation ? 'animate-bounce' : ''}`}>
             <Zap 
               className={`w-8 h-8 transition-colors duration-300 ${
-                goalMet || rewardSent ? 'text-green-500 fill-green-500' : 'text-gray-400'
+                goalMet || rewardSent ? 'text-green-500 fill-green-500' : 'text-zinc-500'
               }`}
             />
             {showZapAnimation && (
@@ -531,16 +531,16 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
 
         {/* Goal Status */}
         {goalMet && !rewardSent && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-[#F7931A]/10 border border-[#F7931A]/20 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="animate-pulse">
-                <Zap className="w-5 h-5 text-blue-600" />
+                <Zap className="w-5 h-5 text-[#F7931A]" />
               </div>
-              <p className="text-sm font-semibold text-blue-800">
+              <p className="text-sm font-semibold text-[#F7931A]">
                 Goal Achieved — Processing reward...
               </p>
             </div>
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-zinc-300">
               {settings.dailyRewardSats} sats will be sent automatically to your Lightning address.
             </p>
           </div>
@@ -567,19 +567,19 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
         {/* Summary Stats */}
         <div className="grid grid-cols-2 gap-4">
           <div className="text-center">
-            <p className="text-sm text-gray-600">Daily Goal</p>
+            <p className="text-sm text-zinc-400">Daily Goal</p>
             <p className="font-semibold">{settings.dailyWordGoal} words</p>
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-600">Reward</p>
+            <p className="text-sm text-zinc-400">Reward</p>
             <p className="font-semibold text-green-600">{settings.dailyRewardSats} sats</p>
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-600">Balance</p>
+            <p className="text-sm text-zinc-400">Balance</p>
             <p className="font-semibold text-orange-600">{balance} sats</p>
           </div>
           <div className="text-center">
-            <p className="text-sm text-gray-600">Streak</p>
+            <p className="text-sm text-zinc-400">Streak</p>
             <div className="flex items-center justify-center gap-1">
               <p className={`font-semibold ${showStreakAnimation ? 'animate-pulse text-green-600' : ''}`}>
                 {streak} days
@@ -630,10 +630,10 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
             
             {/* Title and Message */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-zinc-100">
                 Cancel Stake?
               </h2>
-              <p className="text-gray-600 mt-2">
+              <p className="text-zinc-400 mt-2">
                 This will reset your Lightning Goals setup and you'll lose your current streak.
               </p>
             </div>
@@ -685,10 +685,10 @@ export function AutomatedRewardTracker({ userPubkey, authData, currentWordCount,
             
             {/* Error Message */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-zinc-100">
                 Reward Claim Failed
               </h2>
-              <p className="text-gray-600 mt-2">
+              <p className="text-zinc-400 mt-2">
                 There was an error claiming your reward. Please try again.
               </p>
             </div>

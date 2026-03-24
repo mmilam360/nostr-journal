@@ -73,7 +73,7 @@ export default function SyncUnlockModal({
       case "checking_nostr":
         return (
           <div className="text-center">
-            <Loader2 className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-spin" />
+            <Loader2 className="w-16 h-16 text-[#F7931A] mx-auto mb-4 animate-spin" />
             <h2 className="text-2xl font-bold text-white mb-2">Checking Account Status</h2>
             <p className="text-slate-400 text-sm leading-relaxed">Checking account status on Nostr...</p>
           </div>
@@ -83,7 +83,7 @@ export default function SyncUnlockModal({
         return (
           <>
             <div className="text-center">
-              <ShieldCheck className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+              <ShieldCheck className="w-16 h-16 text-[#F7931A] mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">Create Your Master Password</h2>
               <p className="text-slate-400 text-sm leading-relaxed">
                 This password encrypts your journal and is the only way to access your notes on new devices. We cannot
@@ -147,7 +147,7 @@ export default function SyncUnlockModal({
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full bg-[#F7931A] hover:bg-[#E8850F] text-white"
                 disabled={!isCreateValid}
               >
                 Create & Encrypt Journal
@@ -160,7 +160,7 @@ export default function SyncUnlockModal({
         return (
           <>
             <div className="text-center">
-              <KeyRound className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+              <KeyRound className="w-16 h-16 text-[#F7931A] mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">Unlock Your Journal</h2>
               <p className="text-slate-400 text-sm leading-relaxed">
                 Enter your Master Password to decrypt and sync your notes.
@@ -194,7 +194,7 @@ export default function SyncUnlockModal({
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                className="w-full bg-[#F7931A] hover:bg-[#E8850F] text-white"
                 disabled={!isUnlockValid}
               >
                 Unlock

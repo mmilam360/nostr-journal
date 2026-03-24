@@ -216,7 +216,7 @@ export function DonationModal({ open, onOpenChange }: DonationModalProps) {
             
             {qrDataURL && !isGenerating && !error && (
               <div className="flex flex-col items-center gap-4">
-                <div className="p-4 bg-white rounded-lg border-4 border-gray-200">
+                <div className="p-4 bg-white rounded-lg border-4 border-zinc-700">
                   <img 
                     src={qrDataURL} 
                     alt={invoice ? "Lightning Invoice QR Code" : "Lightning Address QR Code"} 
