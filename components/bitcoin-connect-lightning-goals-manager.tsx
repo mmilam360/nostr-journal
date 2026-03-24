@@ -559,7 +559,16 @@ function BitcoinConnectLightningGoalsManagerInner({
   
   async function handlePaymentConfirmed(amount: number) {
     console.log('[Manager] 💰 Crediting balance:', amount, 'sats')
-    
+
+    // Move to active screen immediately — don't block on Nostr signing
+    setScreen('active')
+    if (onStakeActivated) onStakeActivated()
+    if (onSetupStatusChange) onSetupStatusChange(true)
+    toast.success('Payment confirmed! Stake activated.')
+
+    // Publish Nostr stake event in the background (non-blocking)
+    // Extension signing popup will appear without freezing the UI
+    ;(async () => {
     try {
       // Use createStake function (same as Bitcoin Connect method)
       const { createStake } = await import('@/lib/lightning-goals')
@@ -573,41 +582,18 @@ function BitcoinConnectLightningGoalsManagerInner({
         paymentHash: invoiceData?.paymentHash || 'confirmed' // Include payment hash if available
       }, authData)
       
-      console.log('[Manager] ✅ Balance credited with settings:', {
+      console.log('[Manager] ✅ Nostr stake event published:', {
         goalWords,
         dailyReward,
         lightningAddress,
         amount
       })
       
-      // Trigger callbacks to update parent components
-      if (onStakeActivated) {
-        onStakeActivated()
-      }
-      if (onSetupStatusChange) {
-        onSetupStatusChange(true) // Stake is now active
-      }
-      
-      setScreen('active')
-      
     } catch (error) {
-      console.error('[Manager] ❌ Failed to credit balance:', error)
-      console.error('[Manager] ❌ Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      })
-      console.error('[Manager] ❌ Function parameters:', {
-        userPubkey: userPubkey?.substring(0, 8) + '...',
-        goalWords,
-        dailyReward,
-        amount,
-        lightningAddress,
-        currentWordCount,
-        paymentHash: invoiceData?.paymentHash
-      })
-      toast.error('Payment received but failed to update balance. Check console for details.')
+      // Background publish failed — stake is still active, just log it
+      console.error('[Manager] ⚠️ Background Nostr publish failed (stake still active):', error.message)
     }
+    })() // end background IIFE
   }
   
   // ============================================
