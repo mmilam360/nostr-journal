@@ -66,15 +66,6 @@ function BitcoinConnectLightningGoalsManagerInner({
   const [verificationStarted, setVerificationStarted] = useState(false)
   const [showPaymentSuccess, setShowPaymentSuccess] = useState(false)
   
-  // Start payment verification for QR code payments
-  useEffect(() => {
-    if (screen === 'invoice' && paymentMethod === 'invoice' && invoiceData && !loading && !verificationStarted) {
-      console.log('[Manager] 🔍 Starting payment verification for QR code payment...')
-      setVerificationStarted(true)
-      startPaymentVerification(invoiceData.paymentHash, invoiceData.invoice)
-    }
-  }, [screen, paymentMethod, invoiceData, loading, verificationStarted])
-  
   // Check connection state and load user data
   useEffect(() => {
     const checkConnection = async () => {

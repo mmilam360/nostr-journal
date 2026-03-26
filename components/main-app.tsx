@@ -423,7 +423,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
 
   // Update Lightning Goals with current word count and check for rewards
   const checkRewardEligibility = async (wordCount: number) => {
-    if (!isIncentiveEnabled || !authData) return
+    if (!isIncentiveEnabled() || !authData) return
 
     // Rate limiting to prevent too frequent updates
     const now = Date.now()
@@ -916,7 +916,7 @@ export function MainApp({ authData, onLogout }: MainAppProps) {
         // Check for Lightning Goals reward eligibility after successful save
         console.log("[NostrJournal] 🔥 REACHED Lightning Goals check section")
         console.log("[NostrJournal] 🔍 isIncentiveEnabled:", isIncentiveEnabled)
-        if (isIncentiveEnabled) {
+        if (isIncentiveEnabled()) {
           try {
             console.log("[NostrJournal] ⚡ Checking Lightning Goals reward eligibility...")
             // AUDIT POINT 5: Calculate total word count from ALL notes after save

@@ -437,12 +437,25 @@ function BitcoinConnectTopUp({
   const [error, setError] = useState('')
   const [isVerifying, setIsVerifying] = useState(false)
 
+  const checkPayment = async (invoice: string, paymentHash: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/incentive/verify-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceString: invoice, paymentHash })
+      })
+      const data = await response.json()
+      return data.paid === true
+    } catch {
+      return false
+    }
+  }
+
   const handlePayWithWebLN = async () => {
     setIsPaying(true)
     setError('')
 
     try {
-      // Create invoice
       console.log('[TopUp] Creating invoice for Bitcoin Connect payment...')
       const response = await fetch('/api/incentive/create-topup-invoice', {
         method: 'POST',
@@ -454,12 +467,8 @@ function BitcoinConnectTopUp({
         })
       })
 
-      console.log('[TopUp] Bitcoin Connect Response status:', response.status)
-      console.log('[TopUp] Bitcoin Connect Response headers:', Object.fromEntries(response.headers.entries()))
-      
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('[TopUp] Bitcoin Connect API error response:', errorText)
         throw new Error(`API returned ${response.status}: ${errorText}`)
       }
 
@@ -469,46 +478,54 @@ function BitcoinConnectTopUp({
         throw new Error(data.error || 'Failed to create invoice')
       }
 
-      console.log('[TopUp] Invoice created, requesting WebLN payment...')
-      console.log('[TopUp] 🔒 SECURITY: WebLN will ONLY trigger payment, verification via NWC only')
-
-      // CRITICAL SECURITY: Start verification polling FIRST, before any WebLN interaction
-      // This ensures verification is ALWAYS running regardless of WebLN behavior
-      console.log('[TopUp] 🔍 Starting NWC verification polling IMMEDIATELY...')
+      console.log('[TopUp] Invoice created, starting NWC verification polling...')
       setIsPaying(false)
       setIsVerifying(true)
-      
-      // Start the same robust verification polling as initial stake
-      startPaymentPolling(data.invoice, data.paymentHash, data.amount)
-      
-      // Now attempt WebLN payment (this is just a trigger, not verification)
+
+      // Start verification polling (same pattern as stake verification)
+      let attempts = 0
+      const maxAttempts = 60
+      const pollInterval = setInterval(async () => {
+        attempts++
+        try {
+          console.log(`[TopUp] Verification attempt ${attempts}/${maxAttempts}`)
+          const isPaid = await checkPayment(data.invoice, data.paymentHash)
+
+          if (isPaid) {
+            console.log('[TopUp] Payment confirmed via NWC!')
+            clearInterval(pollInterval)
+            setIsVerifying(false)
+            await onPaymentConfirmed(data.paymentHash, data.amount)
+          } else if (attempts >= maxAttempts) {
+            clearInterval(pollInterval)
+            setIsVerifying(false)
+            setError(`Payment verification timed out. If you paid, contact support with hash: ${data.paymentHash.substring(0, 16)}...`)
+          }
+        } catch (err) {
+          if (attempts >= maxAttempts) {
+            clearInterval(pollInterval)
+            setIsVerifying(false)
+            setError('Payment verification failed. Please try again.')
+          }
+        }
+      }, 3000)
+
+      // Now attempt WebLN payment (trigger only, not trusted for verification)
       try {
-        console.log('[TopUp] 🔌 Attempting WebLN payment trigger...')
-      if (window.webln) {
-        await window.webln.enable()
-        const result = await window.webln.sendPayment(data.invoice)
-          console.log('[TopUp] ✅ WebLN payment triggered!', result)
-          console.log('[TopUp] 🔍 Payment verification is already running via NWC...')
-          
-          // Note: We do NOT trust this response - verification polling will confirm if payment was actually made
-      } else {
-        throw new Error('WebLN not available')
-      }
-        
+        if (window.webln) {
+          await window.webln.enable()
+          await window.webln.sendPayment(data.invoice)
+          console.log('[TopUp] WebLN payment triggered, NWC verification running...')
+        } else {
+          throw new Error('WebLN not available')
+        }
       } catch (weblnError) {
-        console.log('[TopUp] ⚠️ WebLN payment failed, but NWC verification continues:', weblnError)
-        console.log('[TopUp] 🔍 Showing QR code fallback while NWC verification continues...')
-        
-        // Show QR code as fallback if WebLN fails
-        // The verification polling will continue regardless
+        console.log('[TopUp] WebLN payment failed, NWC verification continues:', weblnError)
         setError('WebLN payment failed, but verification continues. Please use QR code if needed.')
       }
-      
-      // CRITICAL: Payment confirmation will ONLY happen via verification polling success
-      // This completely prevents the security vulnerability of trusting WebLN responses
-      
+
     } catch (err: any) {
-      console.error('[TopUp] ❌ WebLN payment process failed:', err)
+      console.error('[TopUp] WebLN payment process failed:', err)
       setError(err.message || 'Payment process failed. Please try the QR code method instead.')
       setIsVerifying(false)
     } finally {

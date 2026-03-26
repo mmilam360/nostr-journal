@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       success: true,
       invoice,
       paymentHash: payment_hash,
-      amount: amountSats * 1000, // Alby Hub NWC uses msats
+      amount: amountSats,
       timestamp: new Date().toISOString()
     }
 
