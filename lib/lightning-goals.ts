@@ -133,11 +133,19 @@ async function publishEvent(
 export async function getLightningGoals(userPubkey: string): Promise<LightningGoals | null> {
   log(`Fetching ledger events for ${userPubkey.substring(0, 8)}...`)
   
-  // 1. Fetch all events
-  const events = await pool.querySync(RELAYS, {
-    kinds: [EVENT_KIND],
-    authors: [userPubkey],
-    "#client": [APP_TAG] // Filter by our app tag
+  // 1. Fetch all events (with 10s timeout to prevent infinite loading if relays are down)
+  const events = await Promise.race([
+    pool.querySync(RELAYS, {
+      kinds: [EVENT_KIND],
+      authors: [userPubkey],
+      "#client": [APP_TAG] // Filter by our app tag
+    }),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Relay query timeout')), 10000)
+    )
+  ]).catch(err => {
+    log(`Query failed: ${err.message}`)
+    return [] as any[]
   })
   
   // Filter for our specific prefixes

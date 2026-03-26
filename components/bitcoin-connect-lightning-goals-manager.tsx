@@ -57,7 +57,7 @@ function BitcoinConnectLightningGoalsManagerInner({
   
   const [screen, setScreen] = useState<'setup' | 'invoice' | 'verifying' | 'active'>('setup')
   const [goalWords, setGoalWords] = useState(500)
-  const [stakeAmount, setStakeAmount] = useState(100)
+  const [stakeAmount, setStakeAmount] = useState(500)
   const [dailyReward, setDailyReward] = useState(100)
   const [lightningAddress, setLightningAddress] = useState('')
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null)
@@ -863,8 +863,12 @@ function BitcoinConnectLightningGoalsManagerInner({
             
             {/* Validation Message */}
             {(!lightningAddress || dailyReward <= 0 || stakeAmount <= 0) && (
-              <p className="text-xs text-red-500 text-center mt-3">
-                Please fill in all fields with valid values
+              <p className="text-xs text-red-500 text-center mt-3 pb-2">
+                {!lightningAddress
+                  ? 'Please enter a Lightning address to receive rewards'
+                  : dailyReward <= 0
+                  ? 'Daily reward must be greater than 0'
+                  : 'Stake amount must be greater than 0'}
               </p>
             )}
             
